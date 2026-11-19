@@ -1,22 +1,209 @@
-import React from 'react';
-import { EmptyState } from '../../../components/common/EmptyState';
+import React, { useEffect, useState, useMemo } from 'react';
+import { Plus, Search, Layers, Clock, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
+import { useRfq } from '../hooks/useRfq';
+import { RfqCard } from '../components/RfqCard';
+import { CreateRfqModal } from '../components/CreateRfqModal';
+import { Button } from '../../../components/ui/Button';
 
 export const RfqListPage: React.FC = () => {
+  const { rfqs, isLoading, error, fetchRfqs } = useRfq();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'OPEN' | 'QUOTED' | 'EXPIRED'>('ALL');
+
+  useEffect(() => {
+    fetchRfqs();
+  }, [fetchRfqs]);
+
+  // Filtered RFQs based on search and status
+  const filteredRfqs = useMemo(() => {
+    return rfqs.filter((rfq) => {
+      const matchesSearch =
+        rfq.partNumber.toLowerCase().includes(searchTerm.toLowerCase().trim()) ||
+        rfq.description.toLowerCase().includes(searchTerm.toLowerCase().trim());
+
+      const rfqStatus = rfq.status || 'OPEN';
+      const matchesStatus = statusFilter === 'ALL' || rfqStatus === statusFilter;
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [rfqs, searchTerm, statusFilter]);
+
+  // Summary Metrics
+  const stats = useMemo(() => {
+    const total = rfqs.length;
+    const open = rfqs.filter((r) => !r.status || r.status === 'OPEN').length;
+    const quoted = rfqs.filter((r) => r.status === 'QUOTED' || (r.quoteCount && r.quoteCount > 0)).length;
+    return { total, open, quoted };
+  }, [rfqs]);
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Requests for Quotation (RFQs)</h1>
-        <p className="text-sm text-slate-500 mt-1">
-          Manage your part requests and supplier bids.
-        </p>
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Requests for Quotation (RFQs)</h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Create part requests, solicit supplier bids, and compare quotations.
+          </p>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="md"
+            onClick={() => fetchRfqs()}
+            disabled={isLoading}
+            className="flex items-center gap-1.5 text-xs text-slate-600"
+            title="Refresh RFQs list"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} /> Refresh
+          </Button>
+          <Button
+            variant="primary"
+            size="md"
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center gap-1.5 shadow-sm shadow-blue-500/20"
+          >
+            <Plus className="h-4 w-4" /> Create New RFQ
+          </Button>
+        </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 p-8 shadow-sm">
-        <EmptyState
-          title="No RFQs configured yet"
-          description="RFQ feature modules are scaffolded and ready for implementation."
-        />
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm flex items-center space-x-3.5">
+          <div className="p-2.5 bg-blue-50 text-blue-600 rounded-lg">
+            <Layers className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Total RFQs</p>
+            <p className="text-xl font-bold text-slate-900 mt-0.5">{stats.total}</p>
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm flex items-center space-x-3.5">
+          <div className="p-2.5 bg-amber-50 text-amber-600 rounded-lg">
+            <Clock className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Open for Bids</p>
+            <p className="text-xl font-bold text-slate-900 mt-0.5">{stats.open}</p>
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm flex items-center space-x-3.5">
+          <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-lg">
+            <CheckCircle2 className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">With Quotations</p>
+            <p className="text-xl font-bold text-slate-900 mt-0.5">{stats.quoted}</p>
+          </div>
+        </div>
       </div>
+
+      {/* Filter and Search Bar */}
+      <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="relative w-full sm:w-80">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+            <Search className="h-4 w-4" />
+          </div>
+          <input
+            type="text"
+            placeholder="Search by part number or description..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-9 pr-3 py-1.5 rounded-lg border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+          />
+        </div>
+
+        <div className="flex items-center space-x-1.5 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
+          {(['ALL', 'OPEN', 'QUOTED', 'EXPIRED'] as const).map((status) => (
+            <button
+              key={status}
+              type="button"
+              onClick={() => setStatusFilter(status)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                statusFilter === status
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              {status}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Error Banner */}
+      {error && (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-xl flex items-center space-x-2 text-sm text-red-700">
+          <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
+
+      {/* RFQ Grid / Loading / Empty State */}
+      {isLoading && rfqs.length === 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3, 4, 5, 6].map((idx) => (
+            <div
+              key={idx}
+              className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm animate-pulse space-y-4"
+            >
+              <div className="flex justify-between items-start">
+                <div className="h-5 bg-slate-200 rounded w-28" />
+                <div className="h-5 bg-slate-200 rounded-full w-16" />
+              </div>
+              <div className="h-4 bg-slate-200 rounded w-3/4" />
+              <div className="h-4 bg-slate-200 rounded w-1/2" />
+              <div className="pt-4 border-t border-slate-100 flex justify-between">
+                <div className="h-4 bg-slate-200 rounded w-20" />
+                <div className="h-4 bg-slate-200 rounded w-24" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : filteredRfqs.length === 0 ? (
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-12 text-center shadow-sm">
+          <div className="mx-auto w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-4">
+            <Layers className="h-6 w-6" />
+          </div>
+          <h3 className="text-base font-semibold text-slate-800">
+            {searchTerm || statusFilter !== 'ALL'
+              ? 'No matching RFQs found'
+              : 'No RFQs created yet'}
+          </h3>
+          <p className="text-sm text-slate-500 mt-1 max-w-sm mx-auto">
+            {searchTerm || statusFilter !== 'ALL'
+              ? 'Try modifying your search term or status filter to see other requests.'
+              : 'Create your first Request for Quotation to start inviting and comparing supplier bids.'}
+          </p>
+          <div className="mt-6">
+            <Button
+              variant="primary"
+              size="md"
+              onClick={() => {
+                setSearchTerm('');
+                setStatusFilter('ALL');
+                setIsModalOpen(true);
+              }}
+              className="inline-flex items-center gap-1.5"
+            >
+              <Plus className="h-4 w-4" /> Create New RFQ
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredRfqs.map((rfq) => (
+            <RfqCard key={rfq.id} rfq={rfq} />
+          ))}
+        </div>
+      )}
+
+      {/* Create RFQ Modal */}
+      <CreateRfqModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
 };

@@ -20,7 +20,7 @@ export interface CreateRfqInput {
   description: string;
   quantity: number;
   neededBy: string;
-  userId: string;
+  userId?: string;
 }
 
 export interface UpdateRfqInput extends Partial<CreateRfqInput> {}
