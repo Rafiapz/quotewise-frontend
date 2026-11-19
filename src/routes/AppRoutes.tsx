@@ -4,6 +4,7 @@ import { AppLayout } from '../components/layout/AppLayout';
 import { RfqListPage } from '../features/rfq/pages/RfqListPage';
 import { RfqDetailPage } from '../features/rfq/pages/RfqDetailPage';
 import { QuotationsPage } from '../features/quotations/pages/QuotationsPage';
+import { NotFoundPage } from '../components/common/NotFoundPage';
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -13,7 +14,7 @@ export const AppRoutes: React.FC = () => {
         <Route path="/rfqs" element={<RfqListPage />} />
         <Route path="/rfqs/:id" element={<RfqDetailPage />} />
         <Route path="/quotations" element={<QuotationsPage />} />
-        <Route path="*" element={<Navigate to="/rfqs" replace />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
   );
