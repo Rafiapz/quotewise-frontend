@@ -14,13 +14,11 @@ export const RegisterPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [agreeTerms, setAgreeTerms] = useState(false);
   const [validationErrors, setValidationErrors] = useState<{
     companyName?: string;
     email?: string;
     password?: string;
     confirmPassword?: string;
-    agreeTerms?: string;
   }>({});
 
   const validate = (): boolean => {
@@ -29,7 +27,6 @@ export const RegisterPage: React.FC = () => {
       email?: string;
       password?: string;
       confirmPassword?: string;
-      agreeTerms?: string;
     } = {};
 
     if (!companyName.trim()) {
@@ -50,10 +47,6 @@ export const RegisterPage: React.FC = () => {
 
     if (password !== confirmPassword) {
       errors.confirmPassword = 'Passwords do not match';
-    }
-
-    if (!agreeTerms) {
-      errors.agreeTerms = 'You must agree to the Terms of Service';
     }
 
     setValidationErrors(errors);
@@ -214,28 +207,6 @@ export const RegisterPage: React.FC = () => {
           </div>
           {validationErrors.confirmPassword && (
             <p className="mt-1 text-xs text-red-600">{validationErrors.confirmPassword}</p>
-          )}
-        </div>
-
-        <div>
-          <label className="flex items-start space-x-2 text-xs text-slate-600 cursor-pointer pt-1">
-            <input
-              type="checkbox"
-              checked={agreeTerms}
-              onChange={(e) => {
-                setAgreeTerms(e.target.checked);
-                if (validationErrors.agreeTerms) {
-                  setValidationErrors((prev) => ({ ...prev, agreeTerms: undefined }));
-                }
-              }}
-              className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 h-4 w-4 mt-0.5"
-            />
-            <span>
-              I agree to the <a href="#terms" className="text-blue-600 hover:underline">Terms of Service</a> and <a href="#privacy" className="text-blue-600 hover:underline">Privacy Policy</a>
-            </span>
-          </label>
-          {validationErrors.agreeTerms && (
-            <p className="mt-1 text-xs text-red-600">{validationErrors.agreeTerms}</p>
           )}
         </div>
 
