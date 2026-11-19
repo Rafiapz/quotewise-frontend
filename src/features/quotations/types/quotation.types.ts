@@ -5,6 +5,7 @@ export interface SupplierQuote extends BaseEntity {
   rfqId: string;
   unitPrice: number;
   leadTime: string;
+  leadTimeDays?: number;
   validUntil: string;
   isBestPrice?: boolean;
 }
@@ -13,7 +14,7 @@ export interface CreateQuotationInput {
   name: string;
   rfqId: string;
   unitPrice: number;
-  leadTime: string;
+  leadTime: number | string;
   validUntil: string;
 }
 
