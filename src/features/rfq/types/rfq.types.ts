@@ -8,6 +8,7 @@ export interface RFQ extends BaseEntity {
   description: string;
   quantity: number;
   neededBy: string;
+  userId: string;
   quotes?: SupplierQuote[];
   status?: RfqStatus;
   bestQuote?: SupplierQuote | null;
@@ -19,6 +20,7 @@ export interface CreateRfqInput {
   description: string;
   quantity: number;
   neededBy: string;
+  userId: string;
 }
 
 export interface UpdateRfqInput extends Partial<CreateRfqInput> {}
@@ -26,6 +28,7 @@ export interface UpdateRfqInput extends Partial<CreateRfqInput> {}
 export interface RfqFilterParams {
   status?: RfqStatus;
   search?: string;
+  userId?: string;
   page?: number;
   limit?: number;
 }
