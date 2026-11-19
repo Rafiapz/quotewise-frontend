@@ -225,3 +225,5 @@ export const RegisterPage: React.FC = () => {
     </AuthLayout>
   );
 };
+
+export default RegisterPage;

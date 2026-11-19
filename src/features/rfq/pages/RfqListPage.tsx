@@ -249,3 +249,5 @@ export const RfqListPage: React.FC = () => {
     </div>
   );
 };
+
+export default RfqListPage;

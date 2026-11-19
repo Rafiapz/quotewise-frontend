@@ -399,3 +399,5 @@ export const RfqDetailPage: React.FC = () => {
     </div>
   );
 };
+
+export default RfqDetailPage;
