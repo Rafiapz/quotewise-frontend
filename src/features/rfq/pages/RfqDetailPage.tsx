@@ -13,7 +13,6 @@ import {
   AlertCircle,
   Trash2,
   Search,
-  ArrowUpDown,
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useRfq } from '../hooks/useRfq';
@@ -37,11 +36,9 @@ export const RfqDetailPage: React.FC = () => {
     pagination,
     lowestUnitPrice,
     searchQuery,
-    sortBy,
     isLoading: isQuotesLoading,
     fetchByRfq,
     setSearch,
-    setSort,
     setPage,
   } = useQuotations();
 
@@ -65,17 +62,16 @@ export const RfqDetailPage: React.FC = () => {
     }
   }, [id, fetchRfqById]);
 
-  // Load quotations with backend filtering, sorting & pagination
+  // Load quotations with backend search & pagination
   const loadQuotations = useCallback(() => {
     if (id) {
       fetchByRfq(id, {
         page: pagination.page,
         limit: pagination.limit || 6,
         search: searchQuery || undefined,
-        sortBy,
       });
     }
-  }, [id, fetchByRfq, pagination.page, pagination.limit, searchQuery, sortBy]);
+  }, [id, fetchByRfq, pagination.page, pagination.limit, searchQuery]);
 
   useEffect(() => {
     loadQuotations();
@@ -298,10 +294,10 @@ export const RfqDetailPage: React.FC = () => {
           )}
         </div>
 
-        {/* Search & Sort Bar for Quotations */}
+        {/* Search Bar for Quotations */}
         {pagination.total > 0 || searchQuery ? (
-          <div className="bg-white p-3 rounded-xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-            <div className="relative w-full sm:w-72">
+          <div className="bg-white p-3 rounded-xl border border-slate-200/80 shadow-sm flex items-center justify-between gap-3">
+            <div className="relative w-full sm:w-80">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                 <Search className="h-4 w-4" />
               </div>
@@ -312,24 +308,6 @@ export const RfqDetailPage: React.FC = () => {
                 onChange={(e) => setSearchInput(e.target.value)}
                 className="w-full pl-9 pr-3 py-1.5 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
               />
-            </div>
-
-            <div className="flex items-center space-x-2 w-full sm:w-auto justify-end">
-              <ArrowUpDown className="h-4 w-4 text-slate-400" />
-              <label htmlFor="quotation-sort" className="text-xs text-slate-500 whitespace-nowrap">Sort by:</label>
-              <select
-                id="quotation-sort"
-                value={sortBy}
-                onChange={(e) =>
-                  setSort(e.target.value as 'price_asc' | 'price_desc' | 'lead_asc' | 'recent')
-                }
-                className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs sm:text-sm text-slate-700 focus:outline-none focus:border-blue-500 font-medium"
-              >
-                <option value="price_asc">Lowest Price (INR)</option>
-                <option value="price_desc">Highest Price (INR)</option>
-                <option value="lead_asc">Shortest Lead Time</option>
-                <option value="recent">Most Recent</option>
-              </select>
             </div>
           </div>
         ) : null}
