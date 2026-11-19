@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Building2, Mail, Lock, Eye, EyeOff, AlertCircle, ArrowRight, ShieldCheck } from 'lucide-react';
+import { toast } from 'react-toastify';
 import { useAuth } from '../hooks/useAuth';
 import { AuthLayout } from '../components/AuthLayout';
 import { Button } from '../../../components/ui/Button';
@@ -65,6 +66,7 @@ export const RegisterPage: React.FC = () => {
     });
 
     if (success) {
+      toast.success('Account created successfully! Welcome to QuoteWise.');
       navigate('/rfqs');
     }
   };

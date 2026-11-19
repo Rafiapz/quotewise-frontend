@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, AlertCircle, ArrowRight } from 'lucide-react';
+import { toast } from 'react-toastify';
 import { useAuth } from '../hooks/useAuth';
 import { AuthLayout } from '../components/AuthLayout';
 import { Button } from '../../../components/ui/Button';
@@ -42,6 +43,7 @@ export const LoginPage: React.FC = () => {
 
     const success = await login({ email, password });
     if (success) {
+      toast.success('Signed in successfully!');
       navigate(redirectPath, { replace: true });
     }
   };
