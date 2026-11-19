@@ -15,23 +15,19 @@ export const authService = {
     try {
       const response = await apiClient.post<ApiResponse<AuthResponse>>('/auth/login', credentials);
       const data = response.data.data;
-      if (data.token) {
-        localStorage.setItem(TOKEN_KEY, data.token);
+      if (data && data.user) {
+        if (data.token) {
+          localStorage.setItem(TOKEN_KEY, data.token);
+        }
+        localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+        return data;
       }
-      localStorage.setItem(USER_KEY, JSON.stringify(data.user));
-      return data;
-    } catch {
-      // Fallback local session simulation if auth endpoints are not yet implemented in backend
-      const mockUser: User = {
-        id: 'user-demo-123',
-        companyName: 'Acme Procurement Corp.',
-        email: credentials.email,
-        createdAt: new Date().toISOString(),
-      };
-      const mockToken = 'mock-jwt-token-' + Date.now();
-      localStorage.setItem(TOKEN_KEY, mockToken);
-      localStorage.setItem(USER_KEY, JSON.stringify(mockUser));
-      return { user: mockUser, token: mockToken };
+      throw new Error('Invalid response from server');
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('Authentication failed');
     }
   },
 
@@ -43,29 +39,31 @@ export const authService = {
         password: credentials.password,
       });
       const data = response.data.data;
-      if (data.token) {
-        localStorage.setItem(TOKEN_KEY, data.token);
+      if (data && data.user) {
+        if (data.token) {
+          localStorage.setItem(TOKEN_KEY, data.token);
+        }
+        localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+        return data;
       }
-      localStorage.setItem(USER_KEY, JSON.stringify(data.user));
-      return data;
-    } catch {
-      // Fallback local session simulation if auth endpoints are not yet implemented in backend
-      const mockUser: User = {
-        id: 'user-' + Date.now(),
-        companyName: credentials.companyName,
-        email: credentials.email,
-        createdAt: new Date().toISOString(),
-      };
-      const mockToken = 'mock-jwt-token-' + Date.now();
-      localStorage.setItem(TOKEN_KEY, mockToken);
-      localStorage.setItem(USER_KEY, JSON.stringify(mockUser));
-      return { user: mockUser, token: mockToken };
+      throw new Error('Invalid response from server');
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('Registration failed');
     }
   },
 
-  logout(): void {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
+  async logout(): Promise<void> {
+    try {
+      await apiClient.post('/auth/logout');
+    } catch {
+      // Continue client cleanup even if network fails
+    } finally {
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(USER_KEY);
+    }
   },
 
   getCurrentUser(): User | null {
@@ -83,6 +81,6 @@ export const authService = {
   },
 
   isAuthenticated(): boolean {
-    return !!localStorage.getItem(TOKEN_KEY);
+    return !!localStorage.getItem(USER_KEY);
   },
 };
