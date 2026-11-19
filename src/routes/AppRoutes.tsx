@@ -6,23 +6,40 @@ import { RegisterPage } from '../features/auth/pages/RegisterPage';
 import { RfqListPage } from '../features/rfq/pages/RfqListPage';
 import { RfqDetailPage } from '../features/rfq/pages/RfqDetailPage';
 import { QuotationsPage } from '../features/quotations/pages/QuotationsPage';
+import { ProtectedRoute, PublicOnlyRoute } from './ProtectedRoute';
 
 export const AppRoutes: React.FC = () => {
   return (
     <Routes>
-      {/* Auth Public Routes */}
-      <Route path="/login" element={<LoginPage />} />
+      {/* Public Authentication Routes (accessible only when NOT logged in) */}
+      <Route
+        path="/login"
+        element={
+          <PublicOnlyRoute>
+            <LoginPage />
+          </PublicOnlyRoute>
+        }
+      />
       <Route path="/signin" element={<Navigate to="/login" replace />} />
-      <Route path="/register" element={<RegisterPage />} />
+      <Route
+        path="/register"
+        element={
+          <PublicOnlyRoute>
+            <RegisterPage />
+          </PublicOnlyRoute>
+        }
+      />
       <Route path="/signup" element={<Navigate to="/register" replace />} />
 
-      {/* Main Workspace Routes */}
-      <Route element={<AppLayout />}>
-        <Route path="/" element={<Navigate to="/rfqs" replace />} />
-        <Route path="/rfqs" element={<RfqListPage />} />
-        <Route path="/rfqs/:id" element={<RfqDetailPage />} />
-        <Route path="/quotations" element={<QuotationsPage />} />
-        <Route path="*" element={<Navigate to="/rfqs" replace />} />
+      {/* Protected Routes (all require authentication, otherwise redirected to /login) */}
+      <Route element={<ProtectedRoute />}>
+        <Route element={<AppLayout />}>
+          <Route path="/" element={<Navigate to="/rfqs" replace />} />
+          <Route path="/rfqs" element={<RfqListPage />} />
+          <Route path="/rfqs/:id" element={<RfqDetailPage />} />
+          <Route path="/quotations" element={<QuotationsPage />} />
+          <Route path="*" element={<Navigate to="/rfqs" replace />} />
+        </Route>
       </Route>
     </Routes>
   );

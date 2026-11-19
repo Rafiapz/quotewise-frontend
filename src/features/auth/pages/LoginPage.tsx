@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, AlertCircle, ArrowRight } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { AuthLayout } from '../components/AuthLayout';
@@ -7,7 +7,10 @@ import { Button } from '../../../components/ui/Button';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login, isLoading, error, clearError } = useAuth();
+
+  const redirectPath = (location.state as { from?: { pathname: string } } | null)?.from?.pathname || '/rfqs';
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -40,7 +43,7 @@ export const LoginPage: React.FC = () => {
 
     const success = await login({ email, password });
     if (success) {
-      navigate('/rfqs');
+      navigate(redirectPath, { replace: true });
     }
   };
 
@@ -54,7 +57,7 @@ export const LoginPage: React.FC = () => {
       password: 'Password123!',
     });
     if (success) {
-      navigate('/rfqs');
+      navigate(redirectPath, { replace: true });
     }
   };
 

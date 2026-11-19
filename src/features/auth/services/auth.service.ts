@@ -66,6 +66,20 @@ export const authService = {
     }
   },
 
+  async getProfile(): Promise<User | null> {
+    try {
+      const response = await apiClient.get<ApiResponse<{ user: User }>>('/auth/me');
+      const user = response.data.data?.user;
+      if (user) {
+        localStorage.setItem(USER_KEY, JSON.stringify(user));
+        return user;
+      }
+      return null;
+    } catch {
+      return this.getCurrentUser();
+    }
+  },
+
   getCurrentUser(): User | null {
     const rawUser = localStorage.getItem(USER_KEY);
     if (!rawUser) return null;
