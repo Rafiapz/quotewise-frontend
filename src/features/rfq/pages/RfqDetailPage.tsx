@@ -334,7 +334,7 @@ export const RfqDetailPage: React.FC = () => {
           </div>
         ) : null}
 
-        {isQuotesLoading && quotations.length === 0 ? (
+        {isQuotesLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-pulse">
             {[1, 2, 3].map((i) => (
               <div key={i} className="bg-white p-5 rounded-xl border border-slate-200 space-y-3">

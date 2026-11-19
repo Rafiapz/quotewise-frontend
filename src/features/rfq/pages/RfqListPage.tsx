@@ -50,6 +50,12 @@ export const RfqListPage: React.FC = () => {
 
   const handleStatusChange = (status: RfqStatusFilter) => {
     updateFilterStatus(status);
+    fetchRfqs({
+      page: 1,
+      limit: pagination.limit || 9,
+      search: searchQuery || undefined,
+      status,
+    });
   };
 
   const handlePageChange = (newPage: number) => {
@@ -163,7 +169,7 @@ export const RfqListPage: React.FC = () => {
       )}
 
       {/* RFQ Grid / Loading / Empty State */}
-      {isLoading && rfqs.length === 0 ? (
+      {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3, 4, 5, 6].map((idx) => (
             <div
