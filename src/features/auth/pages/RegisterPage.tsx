@@ -37,9 +37,9 @@ export const RegisterPage: React.FC = () => {
     }
 
     if (!email.trim()) {
-      errors.email = 'Work email is required';
+      errors.email = 'Email address is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errors.email = 'Please enter a valid work email';
+      errors.email = 'Please enter a valid email address';
     }
 
     if (!password) {
@@ -121,7 +121,7 @@ export const RegisterPage: React.FC = () => {
 
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">
-            Work Email
+            Email address
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
@@ -129,7 +129,7 @@ export const RegisterPage: React.FC = () => {
             </div>
             <input
               type="email"
-              placeholder="procurement@company.com"
+              placeholder="you@company.com"
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value);
