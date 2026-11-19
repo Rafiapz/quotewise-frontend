@@ -69,6 +69,20 @@ export const createRfqThunk = createAsyncThunk<
   }
 });
 
+export const deleteRfqThunk = createAsyncThunk<
+  string,
+  string,
+  { rejectValue: string }
+>('rfq/delete', async (id, { rejectWithValue }) => {
+  try {
+    await rfqService.delete(id);
+    return id;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to delete RFQ';
+    return rejectWithValue(message);
+  }
+});
+
 export const rfqSlice = createSlice({
   name: 'rfq',
   initialState,
@@ -130,6 +144,24 @@ export const rfqSlice = createSlice({
       .addCase(createRfqThunk.rejected, (state, action) => {
         state.isSubmitting = false;
         state.error = action.payload || 'Failed to create RFQ';
+      });
+
+    // deleteRfqThunk
+    builder
+      .addCase(deleteRfqThunk.pending, (state) => {
+        state.isSubmitting = true;
+        state.error = null;
+      })
+      .addCase(deleteRfqThunk.fulfilled, (state, action) => {
+        state.isSubmitting = false;
+        state.rfqs = state.rfqs.filter((rfq) => rfq.id !== action.payload);
+        if (state.selectedRfq?.id === action.payload) {
+          state.selectedRfq = null;
+        }
+      })
+      .addCase(deleteRfqThunk.rejected, (state, action) => {
+        state.isSubmitting = false;
+        state.error = action.payload || 'Failed to delete RFQ';
       });
   },
 });

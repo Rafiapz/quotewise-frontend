@@ -4,6 +4,7 @@ import {
   fetchRfqsThunk,
   fetchRfqByIdThunk,
   createRfqThunk,
+  deleteRfqThunk,
   setSearchQuery,
   setFilterStatus,
   clearRfqError,
@@ -41,6 +42,14 @@ export const useRfq = () => {
     [dispatch]
   );
 
+  const deleteRfq = useCallback(
+    async (id: string) => {
+      const action = await dispatch(deleteRfqThunk(id));
+      return deleteRfqThunk.fulfilled.match(action);
+    },
+    [dispatch]
+  );
+
   const updateSearchQuery = useCallback(
     (query: string) => {
       dispatch(setSearchQuery(query));
@@ -70,6 +79,7 @@ export const useRfq = () => {
     fetchRfqs,
     fetchRfqById,
     createRfq,
+    deleteRfq,
     updateSearchQuery,
     updateFilterStatus,
     clearError,

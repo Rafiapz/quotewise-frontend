@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
   Calendar,
@@ -11,11 +11,14 @@ import {
   TrendingDown,
   RefreshCw,
   AlertCircle,
+  Trash2,
 } from 'lucide-react';
+import { toast } from 'react-toastify';
 import { useRfq } from '../hooks/useRfq';
 import { useQuotations } from '../../quotations/hooks/useQuotations';
 import { QuotationCard } from '../../quotations/components/QuotationCard';
 import { AddQuoteModal } from '../../quotations/components/AddQuoteModal';
+import { DeleteRfqModal } from '../components/DeleteRfqModal';
 import { Button } from '../../../components/ui/Button';
 import { Badge } from '../../../components/ui/Badge';
 import { formatDate, formatCurrency } from '../../../utils/formatters';
@@ -23,9 +26,12 @@ import { getRfqStatusBadgeVariant } from '../utils/rfq.utils';
 
 export const RfqDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { selectedRfq, isLoading: isRfqLoading, error: rfqError, fetchRfqById } = useRfq();
+  const navigate = useNavigate();
+  const { selectedRfq, isLoading: isRfqLoading, error: rfqError, fetchRfqById, deleteRfq } = useRfq();
   const { quotations, isLoading: isQuotesLoading, fetchByRfq } = useQuotations();
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -33,6 +39,24 @@ export const RfqDetailPage: React.FC = () => {
       fetchByRfq(id);
     }
   }, [id, fetchRfqById, fetchByRfq]);
+
+  const handleDeleteRfq = async () => {
+    if (!id) return;
+    try {
+      setIsDeleting(true);
+      const success = await deleteRfq(id);
+      if (success) {
+        toast.success(`RFQ ${selectedRfq?.partNumber || ''} and related quotations deleted successfully`);
+        navigate('/rfqs');
+      } else {
+        toast.error('Failed to delete RFQ');
+      }
+    } catch {
+      toast.error('An unexpected error occurred while deleting');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   // Combine quotations with lowest-price determination
   const processedQuotes = useMemo(() => {
@@ -96,23 +120,35 @@ export const RfqDetailPage: React.FC = () => {
         >
           <ArrowLeft className="h-4 w-4 mr-1.5" /> Back to All RFQs
         </Link>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => {
-            if (id) {
-              fetchRfqById(id);
-              fetchByRfq(id);
-            }
-          }}
-          disabled={isRfqLoading || isQuotesLoading}
-          className="text-xs text-slate-600"
-        >
-          <RefreshCw
-            className={`h-3.5 w-3.5 mr-1.5 ${isRfqLoading || isQuotesLoading ? 'animate-spin' : ''}`}
-          />
-          Refresh
-        </Button>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              if (id) {
+                fetchRfqById(id);
+                fetchByRfq(id);
+              }
+            }}
+            disabled={isRfqLoading || isQuotesLoading}
+            className="text-xs text-slate-600"
+          >
+            <RefreshCw
+              className={`h-3.5 w-3.5 mr-1.5 ${isRfqLoading || isQuotesLoading ? 'animate-spin' : ''}`}
+            />
+            Refresh
+          </Button>
+          <Button
+            variant="danger"
+            size="sm"
+            onClick={() => setIsDeleteModalOpen(true)}
+            disabled={isRfqLoading || isDeleting}
+            className="text-xs flex items-center gap-1.5"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            Delete RFQ
+          </Button>
+        </div>
       </div>
 
       {/* RFQ Header Card */}
@@ -277,6 +313,17 @@ export const RfqDetailPage: React.FC = () => {
           }}
         />
       )}
+
+      {/* Delete RFQ Confirmation Modal */}
+      <DeleteRfqModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteRfq}
+        partNumber={selectedRfq.partNumber}
+        description={selectedRfq.description}
+        quoteCount={processedQuotes.length}
+        isDeleting={isDeleting}
+      />
     </div>
   );
 };
