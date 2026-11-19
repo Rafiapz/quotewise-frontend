@@ -1,43 +1,55 @@
-import { useState, useCallback } from 'react';
-import { type SupplierQuote, type QuotationFilterParams } from '../types/quotation.types';
-import { quotationService } from '../services/quotation.service';
+import { useCallback } from 'react';
+import { useAppDispatch, useAppSelector } from '../../../store/hooks';
+import {
+  fetchQuotationsByRfqThunk,
+  createQuotationThunk,
+  setComparisonMetric,
+  clearQuotationError,
+} from '../store/quotationSlice';
+import {
+  type CreateQuotationInput,
+} from '../types/quotation.types';
 
 export const useQuotations = () => {
-  const [quotations, setQuotations] = useState<SupplierQuote[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  const dispatch = useAppDispatch();
+  const { quotations, isLoading, isSubmitting, error, comparisonMetric } =
+    useAppSelector((state) => state.quotations);
 
-  const fetchQuotations = useCallback(async (params?: QuotationFilterParams) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const data = await quotationService.getAll(params);
-      setQuotations(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch quotations');
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const fetchByRfq = useCallback(
+    async (rfqId: string) => {
+      await dispatch(fetchQuotationsByRfqThunk(rfqId));
+    },
+    [dispatch]
+  );
 
-  const fetchByRfq = useCallback(async (rfqId: string) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const data = await quotationService.getByRfqId(rfqId);
-      setQuotations(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch quotations for RFQ');
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const createQuotation = useCallback(
+    async (payload: CreateQuotationInput) => {
+      const action = await dispatch(createQuotationThunk(payload));
+      return createQuotationThunk.fulfilled.match(action);
+    },
+    [dispatch]
+  );
+
+  const updateComparisonMetric = useCallback(
+    (metric: 'unitPrice' | 'leadTime') => {
+      dispatch(setComparisonMetric(metric));
+    },
+    [dispatch]
+  );
+
+  const clearError = useCallback(() => {
+    dispatch(clearQuotationError());
+  }, [dispatch]);
 
   return {
     quotations,
     isLoading,
+    isSubmitting,
     error,
-    fetchQuotations,
+    comparisonMetric,
     fetchByRfq,
+    createQuotation,
+    updateComparisonMetric,
+    clearError,
   };
 };

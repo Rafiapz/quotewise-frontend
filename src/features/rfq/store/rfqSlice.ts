@@ -1,0 +1,138 @@
+import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
+import { rfqService } from '../services/rfq.service';
+import {
+  type RFQ,
+  type CreateRfqInput,
+  type RfqFilterParams,
+  type RfqStatus,
+} from '../types/rfq.types';
+
+export interface RfqState {
+  rfqs: RFQ[];
+  selectedRfq: RFQ | null;
+  isLoading: boolean;
+  isSubmitting: boolean;
+  error: string | null;
+  searchQuery: string;
+  filterStatus: RfqStatus | 'ALL';
+}
+
+const initialState: RfqState = {
+  rfqs: [],
+  selectedRfq: null,
+  isLoading: false,
+  isSubmitting: false,
+  error: null,
+  searchQuery: '',
+  filterStatus: 'ALL',
+};
+
+export const fetchRfqsThunk = createAsyncThunk<
+  RFQ[],
+  RfqFilterParams | undefined,
+  { rejectValue: string }
+>('rfq/fetchAll', async (params, { rejectWithValue }) => {
+  try {
+    const data = await rfqService.getAll(params);
+    return data;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to fetch RFQs';
+    return rejectWithValue(message);
+  }
+});
+
+export const fetchRfqByIdThunk = createAsyncThunk<
+  RFQ,
+  string,
+  { rejectValue: string }
+>('rfq/fetchById', async (id, { rejectWithValue }) => {
+  try {
+    const data = await rfqService.getById(id);
+    return data;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to fetch RFQ details';
+    return rejectWithValue(message);
+  }
+});
+
+export const createRfqThunk = createAsyncThunk<
+  RFQ,
+  CreateRfqInput,
+  { rejectValue: string }
+>('rfq/create', async (payload, { rejectWithValue }) => {
+  try {
+    const data = await rfqService.create(payload);
+    return data;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to create RFQ';
+    return rejectWithValue(message);
+  }
+});
+
+export const rfqSlice = createSlice({
+  name: 'rfq',
+  initialState,
+  reducers: {
+    setSearchQuery: (state, action: PayloadAction<string>) => {
+      state.searchQuery = action.payload;
+    },
+    setFilterStatus: (state, action: PayloadAction<RfqStatus | 'ALL'>) => {
+      state.filterStatus = action.payload;
+    },
+    clearRfqError: (state) => {
+      state.error = null;
+    },
+    clearSelectedRfq: (state) => {
+      state.selectedRfq = null;
+    },
+  },
+  extraReducers: (builder) => {
+    // fetchRfqsThunk
+    builder
+      .addCase(fetchRfqsThunk.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchRfqsThunk.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.rfqs = action.payload;
+      })
+      .addCase(fetchRfqsThunk.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload || 'Failed to fetch RFQs';
+      });
+
+    // fetchRfqByIdThunk
+    builder
+      .addCase(fetchRfqByIdThunk.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchRfqByIdThunk.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.selectedRfq = action.payload;
+      })
+      .addCase(fetchRfqByIdThunk.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload || 'Failed to fetch RFQ';
+      });
+
+    // createRfqThunk
+    builder
+      .addCase(createRfqThunk.pending, (state) => {
+        state.isSubmitting = true;
+        state.error = null;
+      })
+      .addCase(createRfqThunk.fulfilled, (state, action) => {
+        state.isSubmitting = false;
+        state.rfqs.unshift(action.payload);
+      })
+      .addCase(createRfqThunk.rejected, (state, action) => {
+        state.isSubmitting = false;
+        state.error = action.payload || 'Failed to create RFQ';
+      });
+  },
+});
+
+export const { setSearchQuery, setFilterStatus, clearRfqError, clearSelectedRfq } = rfqSlice.actions;
+export default rfqSlice.reducer;

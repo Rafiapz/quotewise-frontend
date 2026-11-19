@@ -1,45 +1,77 @@
-import { useState, useCallback } from 'react';
-import { type RFQ, type RfqFilterParams } from '../types/rfq.types';
-import { rfqService } from '../services/rfq.service';
+import { useCallback } from 'react';
+import { useAppDispatch, useAppSelector } from '../../../store/hooks';
+import {
+  fetchRfqsThunk,
+  fetchRfqByIdThunk,
+  createRfqThunk,
+  setSearchQuery,
+  setFilterStatus,
+  clearRfqError,
+} from '../store/rfqSlice';
+import {
+  type CreateRfqInput,
+  type RfqFilterParams,
+  type RfqStatus,
+} from '../types/rfq.types';
 
 export const useRfq = () => {
-  const [rfqs, setRfqs] = useState<RFQ[]>([]);
-  const [selectedRfq, setSelectedRfq] = useState<RFQ | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  const dispatch = useAppDispatch();
+  const { rfqs, selectedRfq, isLoading, isSubmitting, error, searchQuery, filterStatus } =
+    useAppSelector((state) => state.rfq);
 
-  const fetchRfqs = useCallback(async (params?: RfqFilterParams) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const data = await rfqService.getAll(params);
-      setRfqs(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch RFQs');
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const fetchRfqs = useCallback(
+    async (params?: RfqFilterParams) => {
+      await dispatch(fetchRfqsThunk(params));
+    },
+    [dispatch]
+  );
 
-  const fetchRfqById = useCallback(async (id: string) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const data = await rfqService.getById(id);
-      setSelectedRfq(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch RFQ details');
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const fetchRfqById = useCallback(
+    async (id: string) => {
+      await dispatch(fetchRfqByIdThunk(id));
+    },
+    [dispatch]
+  );
+
+  const createRfq = useCallback(
+    async (payload: CreateRfqInput) => {
+      const action = await dispatch(createRfqThunk(payload));
+      return createRfqThunk.fulfilled.match(action);
+    },
+    [dispatch]
+  );
+
+  const updateSearchQuery = useCallback(
+    (query: string) => {
+      dispatch(setSearchQuery(query));
+    },
+    [dispatch]
+  );
+
+  const updateFilterStatus = useCallback(
+    (status: RfqStatus | 'ALL') => {
+      dispatch(setFilterStatus(status));
+    },
+    [dispatch]
+  );
+
+  const clearError = useCallback(() => {
+    dispatch(clearRfqError());
+  }, [dispatch]);
 
   return {
     rfqs,
     selectedRfq,
     isLoading,
+    isSubmitting,
     error,
+    searchQuery,
+    filterStatus,
     fetchRfqs,
     fetchRfqById,
+    createRfq,
+    updateSearchQuery,
+    updateFilterStatus,
+    clearError,
   };
 };
