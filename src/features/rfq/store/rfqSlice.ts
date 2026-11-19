@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
+import axios from 'axios';
 import { rfqService } from '../services/rfq.service';
 import {
   type RFQ,
@@ -20,6 +21,7 @@ export interface RfqState {
   filterStatus: RfqStatusFilter;
   pagination: PaginationMeta;
   stats: RfqStats;
+  currentRequestId: string | null;
 }
 
 const initialState: RfqState = {
@@ -44,17 +46,21 @@ const initialState: RfqState = {
     quoted: 0,
     expired: 0,
   },
+  currentRequestId: null,
 };
 
 export const fetchRfqsThunk = createAsyncThunk<
   PaginatedRfqsResponse,
   RfqFilterParams | undefined,
   { rejectValue: string }
->('rfq/fetchAll', async (params, { rejectWithValue }) => {
+>('rfq/fetchAll', async (params, { rejectWithValue, signal }) => {
   try {
-    const data = await rfqService.getAll(params);
+    const data = await rfqService.getAll(params, signal);
     return data;
   } catch (error) {
+    if (axios.isCancel(error)) {
+      return rejectWithValue('cancelled');
+    }
     const message = error instanceof Error ? error.message : 'Failed to fetch RFQs';
     return rejectWithValue(message);
   }
@@ -127,21 +133,32 @@ export const rfqSlice = createSlice({
   extraReducers: (builder) => {
     // fetchRfqsThunk
     builder
-      .addCase(fetchRfqsThunk.pending, (state) => {
+      .addCase(fetchRfqsThunk.pending, (state, action) => {
         state.isLoading = true;
         state.error = null;
+        state.currentRequestId = action.meta.requestId;
       })
       .addCase(fetchRfqsThunk.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.rfqs = action.payload.data;
-        state.pagination = action.payload.meta;
-        if (action.payload.stats) {
-          state.stats = action.payload.stats;
+        // Only accept data if this response matches the most recent request
+        if (state.currentRequestId === action.meta.requestId) {
+          state.isLoading = false;
+          state.rfqs = action.payload.data;
+          state.pagination = action.payload.meta;
+          if (action.payload.stats) {
+            state.stats = action.payload.stats;
+          }
+          state.currentRequestId = null;
         }
       })
       .addCase(fetchRfqsThunk.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload || 'Failed to fetch RFQs';
+        if (action.payload === 'cancelled') {
+          return;
+        }
+        if (state.currentRequestId === action.meta.requestId) {
+          state.isLoading = false;
+          state.error = action.payload || 'Failed to fetch RFQs';
+          state.currentRequestId = null;
+        }
       });
 
     // fetchRfqByIdThunk

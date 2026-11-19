@@ -49,13 +49,11 @@ export const RfqListPage: React.FC = () => {
   }, [loadData]);
 
   const handleStatusChange = (status: RfqStatusFilter) => {
-    updateFilterStatus(status);
-    fetchRfqs({
-      page: 1,
-      limit: pagination.limit || 9,
-      search: searchQuery || undefined,
-      status,
-    });
+    if (status === filterStatus) {
+      loadData();
+    } else {
+      updateFilterStatus(status);
+    }
   };
 
   const handlePageChange = (newPage: number) => {

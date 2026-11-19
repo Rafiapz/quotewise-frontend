@@ -10,8 +10,11 @@ import {
 } from '../types/rfq.types';
 
 export const rfqService = {
-  async getAll(params?: RfqFilterParams): Promise<PaginatedRfqsResponse> {
-    const response = await apiClient.get<PaginatedApiResponse<RFQ, RfqStats>>('/rfqs', { params });
+  async getAll(params?: RfqFilterParams, signal?: AbortSignal): Promise<PaginatedRfqsResponse> {
+    const response = await apiClient.get<PaginatedApiResponse<RFQ, RfqStats>>('/rfqs', {
+      params,
+      signal,
+    });
     return {
       data: response.data.data,
       meta: response.data.meta,

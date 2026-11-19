@@ -13,9 +13,14 @@ export const quotationService = {
     return response.data.data;
   },
 
-  async getByRfqId(rfqId: string, params?: QuotationFilterParams): Promise<PaginatedQuotationsResponse> {
+  async getByRfqId(
+    rfqId: string,
+    params?: QuotationFilterParams,
+    signal?: AbortSignal
+  ): Promise<PaginatedQuotationsResponse> {
     const response = await apiClient.get<PaginatedApiResponse<SupplierQuote>>(`/rfqs/${rfqId}/quotations`, {
       params,
+      signal,
     });
     return {
       data: response.data.data,

@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
+import axios from 'axios';
 import { quotationService } from '../services/quotation.service';
 import {
   type SupplierQuote,
@@ -18,6 +19,7 @@ export interface QuotationState {
   isSubmitting: boolean;
   error: string | null;
   comparisonMetric: 'unitPrice' | 'leadTime';
+  currentRequestId: string | null;
 }
 
 const initialState: QuotationState = {
@@ -37,17 +39,21 @@ const initialState: QuotationState = {
   isSubmitting: false,
   error: null,
   comparisonMetric: 'unitPrice',
+  currentRequestId: null,
 };
 
 export const fetchQuotationsByRfqThunk = createAsyncThunk<
   PaginatedQuotationsResponse,
   { rfqId: string; params?: QuotationFilterParams },
   { rejectValue: string }
->('quotations/fetchByRfq', async ({ rfqId, params }, { rejectWithValue }) => {
+>('quotations/fetchByRfq', async ({ rfqId, params }, { rejectWithValue, signal }) => {
   try {
-    const data = await quotationService.getByRfqId(rfqId, params);
+    const data = await quotationService.getByRfqId(rfqId, params, signal);
     return data;
   } catch (error) {
+    if (axios.isCancel(error)) {
+      return rejectWithValue('cancelled');
+    }
     const message = error instanceof Error ? error.message : 'Failed to fetch quotations';
     return rejectWithValue(message);
   }
@@ -95,19 +101,29 @@ export const quotationSlice = createSlice({
   extraReducers: (builder) => {
     // fetchQuotationsByRfqThunk
     builder
-      .addCase(fetchQuotationsByRfqThunk.pending, (state) => {
+      .addCase(fetchQuotationsByRfqThunk.pending, (state, action) => {
         state.isLoading = true;
         state.error = null;
+        state.currentRequestId = action.meta.requestId;
       })
       .addCase(fetchQuotationsByRfqThunk.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.quotations = action.payload.data;
-        state.pagination = action.payload.meta;
-        state.lowestUnitPrice = action.payload.lowestUnitPrice;
+        if (state.currentRequestId === action.meta.requestId) {
+          state.isLoading = false;
+          state.quotations = action.payload.data;
+          state.pagination = action.payload.meta;
+          state.lowestUnitPrice = action.payload.lowestUnitPrice;
+          state.currentRequestId = null;
+        }
       })
       .addCase(fetchQuotationsByRfqThunk.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload || 'Failed to load quotations';
+        if (action.payload === 'cancelled') {
+          return;
+        }
+        if (state.currentRequestId === action.meta.requestId) {
+          state.isLoading = false;
+          state.error = action.payload || 'Failed to load quotations';
+          state.currentRequestId = null;
+        }
       });
 
     // createQuotationThunk
