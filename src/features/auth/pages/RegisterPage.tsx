@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Building2, Mail, Lock, Eye, EyeOff, AlertCircle, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Building2, Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useAuth } from '../hooks/useAuth';
 import { AuthLayout } from '../components/AuthLayout';
@@ -8,7 +8,7 @@ import { Button } from '../../../components/ui/Button';
 
 export const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
-  const { register, isLoading, error, clearError } = useAuth();
+  const { register, isSubmitting, clearError } = useAuth();
 
   const [companyName, setCompanyName] = useState('');
   const [email, setEmail] = useState('');
@@ -77,13 +77,6 @@ export const RegisterPage: React.FC = () => {
       subtitle="Start managing RFQs and supplier quotes efficiently"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
-        {error && (
-          <div className="p-3.5 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 flex items-start gap-2.5">
-            <AlertCircle className="h-4 w-4 mt-0.5 text-red-600 flex-shrink-0" />
-            <span>{error}</span>
-          </div>
-        )}
-
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">
             Company Name
@@ -216,7 +209,7 @@ export const RegisterPage: React.FC = () => {
           type="submit"
           variant="primary"
           size="md"
-          isLoading={isLoading}
+          isLoading={isSubmitting}
           className="w-full flex items-center justify-center gap-2 py-2.5 font-semibold text-sm mt-4"
         >
           Create account <ArrowRight className="h-4 w-4" />

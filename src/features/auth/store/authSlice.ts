@@ -11,6 +11,8 @@ export interface AuthState {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
+  isCheckingAuth: boolean;
+  isSubmitting: boolean;
   isLoading: boolean;
   error: string | null;
 }
@@ -22,6 +24,8 @@ const initialState: AuthState = {
   user: initialUser,
   token: initialToken,
   isAuthenticated: !!initialUser,
+  isCheckingAuth: true,
+  isSubmitting: false,
   isLoading: true,
   error: null,
 };
@@ -92,73 +96,76 @@ export const authSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    // checkAuthThunk
+    // checkAuthThunk: initial session hydration
     builder
       .addCase(checkAuthThunk.pending, (state) => {
+        state.isCheckingAuth = true;
         state.isLoading = true;
       })
       .addCase(checkAuthThunk.fulfilled, (state, action) => {
+        state.isCheckingAuth = false;
         state.isLoading = false;
         state.user = action.payload;
         state.isAuthenticated = !!action.payload;
       })
       .addCase(checkAuthThunk.rejected, (state) => {
+        state.isCheckingAuth = false;
         state.isLoading = false;
         state.user = null;
         state.token = null;
         state.isAuthenticated = false;
       });
 
-    // loginThunk
+    // loginThunk: user form submission
     builder
       .addCase(loginThunk.pending, (state) => {
-        state.isLoading = true;
+        state.isSubmitting = true;
         state.error = null;
       })
       .addCase(loginThunk.fulfilled, (state, action) => {
-        state.isLoading = false;
+        state.isSubmitting = false;
         state.user = action.payload.user;
         state.token = action.payload.token ?? null;
         state.isAuthenticated = true;
         state.error = null;
       })
       .addCase(loginThunk.rejected, (state, action) => {
-        state.isLoading = false;
+        state.isSubmitting = false;
         state.error = typeof action.payload === 'string' ? action.payload : action.error.message || 'Login failed';
       });
 
-    // registerThunk
+    // registerThunk: user registration submission
     builder
       .addCase(registerThunk.pending, (state) => {
-        state.isLoading = true;
+        state.isSubmitting = true;
         state.error = null;
       })
       .addCase(registerThunk.fulfilled, (state, action) => {
-        state.isLoading = false;
+        state.isSubmitting = false;
         state.user = action.payload.user;
         state.token = action.payload.token ?? null;
         state.isAuthenticated = true;
         state.error = null;
       })
       .addCase(registerThunk.rejected, (state, action) => {
-        state.isLoading = false;
+        state.isSubmitting = false;
         state.error = typeof action.payload === 'string' ? action.payload : action.error.message || 'Registration failed';
       });
 
     // logoutThunk
     builder
       .addCase(logoutThunk.pending, (state) => {
-        state.isLoading = true;
+        state.isSubmitting = true;
       })
       .addCase(logoutThunk.fulfilled, (state) => {
-        state.isLoading = false;
+        state.isSubmitting = false;
         state.user = null;
         state.token = null;
         state.isAuthenticated = false;
         state.error = null;
       })
       .addCase(logoutThunk.rejected, (state) => {
-        state.isLoading = false;
+        state.isSubmitting = false;
         state.user = null;
         state.token = null;
         state.isAuthenticated = false;

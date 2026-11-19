@@ -17,6 +17,8 @@ export interface UseAuthReturn {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isCheckingAuth: boolean;
+  isSubmitting: boolean;
   error: string | null;
   login: (credentials: LoginCredentials) => Promise<boolean>;
   register: (credentials: RegisterCredentials) => Promise<boolean>;
@@ -26,7 +28,8 @@ export interface UseAuthReturn {
 
 export const useAuth = (): UseAuthReturn => {
   const dispatch = useAppDispatch();
-  const { user, isAuthenticated, isLoading, error } = useAppSelector((state) => state.auth);
+  const { user, isAuthenticated, isLoading, isCheckingAuth, isSubmitting, error } =
+    useAppSelector((state) => state.auth);
 
   const login = useCallback(
     async (credentials: LoginCredentials): Promise<boolean> => {
@@ -56,6 +59,8 @@ export const useAuth = (): UseAuthReturn => {
     user,
     isAuthenticated,
     isLoading,
+    isCheckingAuth,
+    isSubmitting,
     error,
     login,
     register,

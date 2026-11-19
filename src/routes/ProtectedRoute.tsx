@@ -4,10 +4,10 @@ import { useAuth } from '../features/auth/hooks/useAuth';
 import { Loader2 } from 'lucide-react';
 
 export const ProtectedRoute: React.FC = () => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isCheckingAuth } = useAuth();
   const location = useLocation();
 
-  if (isLoading) {
+  if (isCheckingAuth) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
         <div className="flex flex-col items-center space-y-3">
@@ -26,9 +26,9 @@ export const ProtectedRoute: React.FC = () => {
 };
 
 export const PublicOnlyRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isCheckingAuth } = useAuth();
 
-  if (isLoading) {
+  if (isCheckingAuth) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
         <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />

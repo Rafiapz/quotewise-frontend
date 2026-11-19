@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, AlertCircle, ArrowRight } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useAuth } from '../hooks/useAuth';
 import { AuthLayout } from '../components/AuthLayout';
@@ -9,7 +9,7 @@ import { Button } from '../../../components/ui/Button';
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, isLoading, error, clearError } = useAuth();
+  const { login, isSubmitting, clearError } = useAuth();
 
   const redirectPath = (location.state as { from?: { pathname: string } } | null)?.from?.pathname || '/rfqs';
 
@@ -54,13 +54,6 @@ export const LoginPage: React.FC = () => {
       subtitle="Sign in to your QuoteWise procurement portal"
     >
       <form onSubmit={handleSubmit} className="space-y-5">
-        {error && (
-          <div className="p-3.5 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 flex items-start gap-2.5">
-            <AlertCircle className="h-4 w-4 mt-0.5 text-red-600 flex-shrink-0" />
-            <span>{error}</span>
-          </div>
-        )}
-
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">
             Email address
@@ -135,7 +128,7 @@ export const LoginPage: React.FC = () => {
           type="submit"
           variant="primary"
           size="md"
-          isLoading={isLoading}
+          isLoading={isSubmitting}
           className="w-full flex items-center justify-center gap-2 py-2.5 font-semibold text-sm"
         >
           Sign in <ArrowRight className="h-4 w-4" />
