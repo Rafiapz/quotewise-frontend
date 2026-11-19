@@ -41,23 +41,23 @@ export const RfqCard: React.FC<RfqCardProps> = ({ rfq }) => {
     <>
       <Card className="hover:border-slate-300 transition-all shadow-sm hover:shadow flex flex-col justify-between">
         <div>
-          <div className="flex items-start justify-between">
-            <div>
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0 flex-1">
               <span className="text-xs font-mono font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
                 {rfq.partNumber}
               </span>
-              <h3 className="text-base font-semibold text-slate-800 mt-2">{rfq.description}</h3>
+              <h3 className="text-sm sm:text-base font-semibold text-slate-800 mt-2 break-words">{rfq.description}</h3>
             </div>
-            <Badge variant={getRfqStatusBadgeVariant(status)}>{status}</Badge>
+            <Badge variant={getRfqStatusBadgeVariant(status)} className="flex-shrink-0">{status}</Badge>
           </div>
 
-          <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+          <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between flex-wrap gap-2 text-xs text-slate-500">
             <div className="flex items-center space-x-1">
-              <Package className="h-4 w-4 text-slate-400" />
+              <Package className="h-4 w-4 text-slate-400 flex-shrink-0" />
               <span>Qty: {rfq.quantity.toLocaleString()}</span>
             </div>
             <div className="flex items-center space-x-1">
-              <Calendar className="h-4 w-4 text-slate-400" />
+              <Calendar className="h-4 w-4 text-slate-400 flex-shrink-0" />
               <span>Needed by {formatDate(rfq.neededBy)}</span>
             </div>
           </div>

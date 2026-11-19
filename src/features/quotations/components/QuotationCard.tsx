@@ -45,7 +45,7 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({ quote, quantity })
         )}
       </div>
 
-      <div className="mt-4 pt-3.5 border-t border-slate-100 grid grid-cols-2 gap-3 text-xs text-slate-600">
+      <div className="mt-4 pt-3.5 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-xs text-slate-600">
         <div className="flex items-center space-x-1.5">
           <Clock className="h-4 w-4 text-blue-500 flex-shrink-0" />
           <span>Lead Time: <strong className="text-slate-800">{leadTimeDisplay}</strong></span>

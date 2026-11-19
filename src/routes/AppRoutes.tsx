@@ -5,7 +5,6 @@ import { LoginPage } from '../features/auth/pages/LoginPage';
 import { RegisterPage } from '../features/auth/pages/RegisterPage';
 import { RfqListPage } from '../features/rfq/pages/RfqListPage';
 import { RfqDetailPage } from '../features/rfq/pages/RfqDetailPage';
-import { QuotationsPage } from '../features/quotations/pages/QuotationsPage';
 import { ProtectedRoute, PublicOnlyRoute } from './ProtectedRoute';
 
 export const AppRoutes: React.FC = () => {
@@ -37,7 +36,7 @@ export const AppRoutes: React.FC = () => {
           <Route path="/" element={<Navigate to="/rfqs" replace />} />
           <Route path="/rfqs" element={<RfqListPage />} />
           <Route path="/rfqs/:id" element={<RfqDetailPage />} />
-          <Route path="/quotations" element={<QuotationsPage />} />
+          <Route path="/quotations" element={<Navigate to="/rfqs" replace />} />
           <Route path="*" element={<Navigate to="/rfqs" replace />} />
         </Route>
       </Route>

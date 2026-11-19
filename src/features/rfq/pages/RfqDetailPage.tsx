@@ -113,14 +113,14 @@ export const RfqDetailPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Top Navigation */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <Link
           to="/rfqs"
           className="inline-flex items-center text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors"
         >
           <ArrowLeft className="h-4 w-4 mr-1.5" /> Back to All RFQs
         </Link>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
@@ -131,7 +131,7 @@ export const RfqDetailPage: React.FC = () => {
               }
             }}
             disabled={isRfqLoading || isQuotesLoading}
-            className="text-xs text-slate-600"
+            className="flex-1 sm:flex-initial text-xs text-slate-600"
           >
             <RefreshCw
               className={`h-3.5 w-3.5 mr-1.5 ${isRfqLoading || isQuotesLoading ? 'animate-spin' : ''}`}
@@ -143,7 +143,7 @@ export const RfqDetailPage: React.FC = () => {
             size="sm"
             onClick={() => setIsDeleteModalOpen(true)}
             disabled={isRfqLoading || isDeleting}
-            className="text-xs flex items-center gap-1.5"
+            className="flex-1 sm:flex-initial text-xs flex items-center justify-center gap-1.5"
           >
             <Trash2 className="h-3.5 w-3.5" />
             Delete RFQ
@@ -152,10 +152,10 @@ export const RfqDetailPage: React.FC = () => {
       </div>
 
       {/* RFQ Header Card */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm space-y-5">
+      <div className="bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-6 shadow-sm space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div>
-            <div className="flex items-center space-x-2.5">
+            <div className="flex items-center flex-wrap gap-2">
               <span className="text-sm font-mono font-bold px-2.5 py-1 bg-blue-50 text-blue-700 rounded-lg border border-blue-200/60">
                 {selectedRfq.partNumber}
               </span>
@@ -163,7 +163,7 @@ export const RfqDetailPage: React.FC = () => {
                 {rfqStatus}
               </Badge>
             </div>
-            <h1 className="text-xl font-bold text-slate-900 mt-2 tracking-tight">
+            <h1 className="text-lg sm:text-xl font-bold text-slate-900 mt-2 tracking-tight break-words">
               {selectedRfq.description}
             </h1>
           </div>
@@ -172,65 +172,65 @@ export const RfqDetailPage: React.FC = () => {
             variant="primary"
             size="md"
             onClick={() => setIsQuoteModalOpen(true)}
-            className="flex items-center gap-1.5 shadow-sm shadow-blue-500/20 flex-shrink-0"
+            className="w-full sm:w-auto flex items-center justify-center gap-1.5 shadow-sm shadow-blue-500/20 flex-shrink-0"
           >
             <Plus className="h-4 w-4" /> Add Supplier Quote
           </Button>
         </div>
 
         {/* Spec Meta Row */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-slate-100 text-xs">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 pt-4 border-t border-slate-100 text-xs">
           <div className="flex items-center space-x-2 text-slate-600">
-            <Package className="h-4 w-4 text-blue-500" />
+            <Package className="h-4 w-4 text-blue-500 flex-shrink-0" />
             <div>
               <p className="text-slate-400 uppercase tracking-wider text-[10px] font-semibold">Quantity</p>
-              <p className="font-bold text-slate-800 text-sm">{selectedRfq.quantity.toLocaleString()} units</p>
+              <p className="font-bold text-slate-800 text-xs sm:text-sm">{selectedRfq.quantity.toLocaleString()} units</p>
             </div>
           </div>
 
           <div className="flex items-center space-x-2 text-slate-600">
-            <Calendar className="h-4 w-4 text-amber-500" />
+            <Calendar className="h-4 w-4 text-amber-500 flex-shrink-0" />
             <div>
               <p className="text-slate-400 uppercase tracking-wider text-[10px] font-semibold">Needed By</p>
-              <p className="font-bold text-slate-800 text-sm">{formatDate(selectedRfq.neededBy)}</p>
+              <p className="font-bold text-slate-800 text-xs sm:text-sm">{formatDate(selectedRfq.neededBy)}</p>
             </div>
           </div>
 
           <div className="flex items-center space-x-2 text-slate-600">
-            <Clock className="h-4 w-4 text-emerald-500" />
+            <Clock className="h-4 w-4 text-emerald-500 flex-shrink-0" />
             <div>
               <p className="text-slate-400 uppercase tracking-wider text-[10px] font-semibold">Created On</p>
-              <p className="font-bold text-slate-800 text-sm">{formatDate(selectedRfq.createdAt)}</p>
+              <p className="font-bold text-slate-800 text-xs sm:text-sm">{formatDate(selectedRfq.createdAt)}</p>
             </div>
           </div>
 
           <div className="flex items-center space-x-2 text-slate-600">
-            <Layers className="h-4 w-4 text-purple-500" />
+            <Layers className="h-4 w-4 text-purple-500 flex-shrink-0" />
             <div>
               <p className="text-slate-400 uppercase tracking-wider text-[10px] font-semibold">Quotes Received</p>
-              <p className="font-bold text-slate-800 text-sm">{processedQuotes.length} bids</p>
+              <p className="font-bold text-slate-800 text-xs sm:text-sm">{processedQuotes.length} bids</p>
             </div>
           </div>
         </div>
 
         {/* Best Price Highlight Banner */}
         {bestQuote && (
-          <div className="p-4 bg-emerald-50 border border-emerald-200/80 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div className="p-3.5 sm:p-4 bg-emerald-50 border border-emerald-200/80 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
             <div className="flex items-center space-x-2.5">
-              <div className="p-2 bg-emerald-600 text-white rounded-lg">
+              <div className="p-2 bg-emerald-600 text-white rounded-lg flex-shrink-0">
                 <Award className="h-5 w-5" />
               </div>
               <div>
-                <p className="font-semibold text-emerald-900 text-sm">
+                <p className="font-semibold text-emerald-900 text-xs sm:text-sm">
                   Best Available Price: {formatCurrency(bestQuote.unitPrice)} / unit
                 </p>
-                <p className="text-emerald-700">
+                <p className="text-emerald-700 text-[11px] sm:text-xs">
                   Offered by <strong>{bestQuote.name}</strong> • Total order:{' '}
                   <strong>{formatCurrency(bestQuote.unitPrice * selectedRfq.quantity)}</strong>
                 </p>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 self-start sm:self-center">
               <span className="px-2.5 py-1 bg-emerald-100 text-emerald-800 font-bold rounded-lg uppercase tracking-wider text-[10px]">
                 Lowest Bid
               </span>
@@ -241,9 +241,9 @@ export const RfqDetailPage: React.FC = () => {
 
       {/* Supplier Quotes Section */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
           <div>
-            <h2 className="text-lg font-bold text-slate-900">Supplier Quotes (Bids)</h2>
+            <h2 className="text-base sm:text-lg font-bold text-slate-900">Supplier Quotes (Bids)</h2>
             <p className="text-xs text-slate-500">
               Review price quotes, promised lead times, and quote validity dates in INR.
             </p>
@@ -253,7 +253,7 @@ export const RfqDetailPage: React.FC = () => {
               variant="outline"
               size="sm"
               onClick={() => setIsQuoteModalOpen(true)}
-              className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 border-blue-200 hover:bg-blue-50"
+              className="w-full sm:w-auto flex items-center justify-center gap-1.5 text-xs font-semibold text-blue-600 border-blue-200 hover:bg-blue-50"
             >
               <Plus className="h-3.5 w-3.5" /> Add Another Quote
             </Button>

@@ -40,20 +40,20 @@ export const RfqListPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Requests for Quotation (RFQs)</h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">Requests for Quotation (RFQs)</h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
             Create part requests, solicit supplier bids, and compare quotations.
           </p>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <Button
             variant="outline"
             size="md"
             onClick={() => fetchRfqs()}
             disabled={isLoading}
-            className="flex items-center gap-1.5 text-xs text-slate-600"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 text-xs text-slate-600"
             title="Refresh RFQs list"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} /> Refresh
@@ -62,7 +62,7 @@ export const RfqListPage: React.FC = () => {
             variant="primary"
             size="md"
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-1.5 shadow-sm shadow-blue-500/20"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 shadow-sm shadow-blue-500/20 text-xs sm:text-sm"
           >
             <Plus className="h-4 w-4" /> Create New RFQ
           </Button>
@@ -70,60 +70,60 @@ export const RfqListPage: React.FC = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm flex items-center space-x-3.5">
-          <div className="p-2.5 bg-blue-50 text-blue-600 rounded-lg">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+        <div className="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200/80 shadow-sm flex items-center space-x-3.5">
+          <div className="p-2 sm:p-2.5 bg-blue-50 text-blue-600 rounded-lg">
             <Layers className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Total RFQs</p>
-            <p className="text-xl font-bold text-slate-900 mt-0.5">{stats.total}</p>
+            <p className="text-[11px] sm:text-xs font-medium text-slate-500 uppercase tracking-wider">Total RFQs</p>
+            <p className="text-lg sm:text-xl font-bold text-slate-900 mt-0.5">{stats.total}</p>
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm flex items-center space-x-3.5">
-          <div className="p-2.5 bg-amber-50 text-amber-600 rounded-lg">
+        <div className="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200/80 shadow-sm flex items-center space-x-3.5">
+          <div className="p-2 sm:p-2.5 bg-amber-50 text-amber-600 rounded-lg">
             <Clock className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Open for Bids</p>
-            <p className="text-xl font-bold text-slate-900 mt-0.5">{stats.open}</p>
+            <p className="text-[11px] sm:text-xs font-medium text-slate-500 uppercase tracking-wider">Open for Bids</p>
+            <p className="text-lg sm:text-xl font-bold text-slate-900 mt-0.5">{stats.open}</p>
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm flex items-center space-x-3.5">
-          <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-lg">
+        <div className="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200/80 shadow-sm flex items-center space-x-3.5">
+          <div className="p-2 sm:p-2.5 bg-emerald-50 text-emerald-600 rounded-lg">
             <CheckCircle2 className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">With Quotations</p>
-            <p className="text-xl font-bold text-slate-900 mt-0.5">{stats.quoted}</p>
+            <p className="text-[11px] sm:text-xs font-medium text-slate-500 uppercase tracking-wider">With Quotations</p>
+            <p className="text-lg sm:text-xl font-bold text-slate-900 mt-0.5">{stats.quoted}</p>
           </div>
         </div>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div className="bg-white p-3 sm:p-4 rounded-xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="relative w-full sm:w-80">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
             <Search className="h-4 w-4" />
           </div>
           <input
             type="text"
-            placeholder="Search by part number or description..."
+            placeholder="Search part # or description..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 rounded-lg border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+            className="w-full pl-9 pr-3 py-2 sm:py-1.5 rounded-lg border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
           />
         </div>
 
-        <div className="flex items-center space-x-1.5 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
+        <div className="flex items-center space-x-1.5 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
           {(['ALL', 'OPEN', 'QUOTED', 'EXPIRED'] as const).map((status) => (
             <button
               key={status}
               type="button"
               onClick={() => setStatusFilter(status)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
                 statusFilter === status
                   ? 'bg-blue-600 text-white shadow-sm'
                   : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
