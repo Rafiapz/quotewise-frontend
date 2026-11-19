@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Plus, Building2, Calendar, Clock, IndianRupee } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { Button } from '../../../components/ui/Button';
@@ -34,6 +35,17 @@ export const AddQuoteModal: React.FC<AddQuoteModalProps> = ({
     leadTimeDays?: string;
     validUntil?: string;
   }>({});
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -100,10 +112,13 @@ export const AddQuoteModal: React.FC<AddQuoteModalProps> = ({
       ? Number(unitPrice) * quantity
       : undefined;
 
-  return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[9999] overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
+      onClick={onClose}
+    >
       <div
-        className="relative bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-150"
+        className="relative bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-150 my-8"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -275,6 +290,7 @@ export const AddQuoteModal: React.FC<AddQuoteModalProps> = ({
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
