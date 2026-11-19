@@ -15,7 +15,6 @@ export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
   const [validationErrors, setValidationErrors] = useState<{ email?: string; password?: string }>({});
 
   const validate = (): boolean => {
@@ -42,20 +41,6 @@ export const LoginPage: React.FC = () => {
     if (!validate()) return;
 
     const success = await login({ email, password });
-    if (success) {
-      navigate(redirectPath, { replace: true });
-    }
-  };
-
-  const handleDemoLogin = async () => {
-    setEmail('procurement@quotewise.io');
-    setPassword('Password123!');
-    setValidationErrors({});
-    clearError();
-    const success = await login({
-      email: 'procurement@quotewise.io',
-      password: 'Password123!',
-    });
     if (success) {
       navigate(redirectPath, { replace: true });
     }
@@ -138,16 +123,7 @@ export const LoginPage: React.FC = () => {
           )}
         </div>
 
-        <div className="flex items-center justify-between text-xs">
-          <label className="flex items-center space-x-2 text-slate-600 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
-              className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 h-4 w-4"
-            />
-            <span>Remember me</span>
-          </label>
+        <div className="flex items-center justify-end text-xs">
           <a href="#forgot" className="text-blue-600 hover:text-blue-700 font-medium">
             Forgot password?
           </a>
@@ -161,25 +137,6 @@ export const LoginPage: React.FC = () => {
           className="w-full flex items-center justify-center gap-2 py-2.5 font-semibold text-sm"
         >
           Sign in <ArrowRight className="h-4 w-4" />
-        </Button>
-
-        <div className="relative my-4">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-slate-200" />
-          </div>
-          <div className="relative flex justify-center text-xs">
-            <span className="bg-white px-3 text-slate-400">Or continue with</span>
-          </div>
-        </div>
-
-        <Button
-          type="button"
-          variant="outline"
-          size="md"
-          onClick={handleDemoLogin}
-          className="w-full text-xs text-slate-600 hover:bg-slate-50 font-normal"
-        >
-          Fill Demo Account
         </Button>
       </form>
 
