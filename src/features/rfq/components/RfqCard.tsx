@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, Package, ArrowRight, Trash2 } from 'lucide-react';
+import { Calendar, Package, ArrowRight, Trash2, Award } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { type RFQ } from '../types/rfq.types';
 import { Card } from '../../../components/ui/Card';
@@ -8,7 +8,7 @@ import { Badge } from '../../../components/ui/Badge';
 import { DeleteRfqModal } from './DeleteRfqModal';
 import { useRfq } from '../hooks/useRfq';
 import { getRfqStatusBadgeVariant } from '../utils/rfq.utils';
-import { formatDate } from '../../../utils/formatters';
+import { formatDate, formatCurrency } from '../../../utils/formatters';
 
 export interface RfqCardProps {
   rfq: RFQ;
@@ -61,6 +61,21 @@ export const RfqCard: React.FC<RfqCardProps> = ({ rfq }) => {
               <span>Needed by {formatDate(rfq.neededBy)}</span>
             </div>
           </div>
+
+          {rfq.bestQuote && (
+            <div className="mt-3 p-2 bg-emerald-50/90 border border-emerald-200/90 rounded-lg flex items-center justify-between text-xs">
+              <div className="flex items-center space-x-1.5 min-w-0">
+                <Award className="h-3.5 w-3.5 text-emerald-600 flex-shrink-0" />
+                <span className="text-[11px] text-emerald-700 font-medium">Best:</span>
+                <span className="font-semibold text-emerald-900 truncate max-w-[120px] sm:max-w-[150px]">
+                  {rfq.bestQuote.name}
+                </span>
+              </div>
+              <span className="font-bold text-emerald-800 font-mono text-xs flex-shrink-0">
+                {formatCurrency(rfq.bestQuote.unitPrice)}
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
