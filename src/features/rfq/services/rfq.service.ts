@@ -1,16 +1,22 @@
 import apiClient from '../../../lib/axios';
-import { type ApiResponse } from '../../../types/api';
+import { type ApiResponse, type PaginatedApiResponse } from '../../../types/api';
 import {
   type RFQ,
   type CreateRfqInput,
   type UpdateRfqInput,
   type RfqFilterParams,
+  type PaginatedRfqsResponse,
+  type RfqStats,
 } from '../types/rfq.types';
 
 export const rfqService = {
-  async getAll(params?: RfqFilterParams): Promise<RFQ[]> {
-    const response = await apiClient.get<ApiResponse<RFQ[]>>('/rfqs', { params });
-    return response.data.data;
+  async getAll(params?: RfqFilterParams): Promise<PaginatedRfqsResponse> {
+    const response = await apiClient.get<PaginatedApiResponse<RFQ, RfqStats>>('/rfqs', { params });
+    return {
+      data: response.data.data,
+      meta: response.data.meta,
+      stats: response.data.stats,
+    };
   },
 
   async getById(id: string): Promise<RFQ> {

@@ -1,4 +1,5 @@
 import { type BaseEntity } from '../../../types/common';
+import { type PaginationMeta } from '../../../types/api';
 
 export interface SupplierQuote extends BaseEntity {
   name: string;
@@ -20,5 +21,14 @@ export interface CreateQuotationInput {
 
 export interface QuotationFilterParams {
   rfqId?: string;
-  name?: string;
+  search?: string;
+  page?: number;
+  limit?: number;
+  sortBy?: 'price_asc' | 'price_desc' | 'lead_asc' | 'recent';
+}
+
+export interface PaginatedQuotationsResponse {
+  data: SupplierQuote[];
+  meta: PaginationMeta;
+  lowestUnitPrice?: number;
 }

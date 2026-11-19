@@ -1,3 +1,12 @@
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   data: T;
@@ -10,13 +19,10 @@ export interface ApiErrorResponse {
   errors?: Record<string, string[]>;
 }
 
-export interface PaginatedResponse<T> {
+export interface PaginatedApiResponse<T, TStats = unknown> {
   success: boolean;
   data: T[];
-  pagination: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
+  meta: PaginationMeta;
+  stats?: TStats;
+  lowestUnitPrice?: number;
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -12,6 +12,8 @@ import {
   RefreshCw,
   AlertCircle,
   Trash2,
+  Search,
+  ArrowUpDown,
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useRfq } from '../hooks/useRfq';
@@ -21,6 +23,8 @@ import { AddQuoteModal } from '../../quotations/components/AddQuoteModal';
 import { DeleteRfqModal } from '../components/DeleteRfqModal';
 import { Button } from '../../../components/ui/Button';
 import { Badge } from '../../../components/ui/Badge';
+import { Pagination } from '../../../components/ui/Pagination';
+import { useDebounce } from '../../../hooks/useDebounce';
 import { formatDate, formatCurrency } from '../../../utils/formatters';
 import { getRfqStatusBadgeVariant } from '../utils/rfq.utils';
 
@@ -28,17 +32,54 @@ export const RfqDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { selectedRfq, isLoading: isRfqLoading, error: rfqError, fetchRfqById, deleteRfq } = useRfq();
-  const { quotations, isLoading: isQuotesLoading, fetchByRfq } = useQuotations();
+  const {
+    quotations,
+    pagination,
+    lowestUnitPrice,
+    searchQuery,
+    sortBy,
+    isLoading: isQuotesLoading,
+    fetchByRfq,
+    setSearch,
+    setSort,
+    setPage,
+  } = useQuotations();
+
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [searchInput, setSearchInput] = useState(searchQuery);
+  const debouncedSearch = useDebounce(searchInput, 350);
 
+  // Sync debounced search to redux state
+  useEffect(() => {
+    if (debouncedSearch !== searchQuery) {
+      setSearch(debouncedSearch);
+    }
+  }, [debouncedSearch, searchQuery, setSearch]);
+
+  // Load RFQ details
   useEffect(() => {
     if (id) {
       fetchRfqById(id);
-      fetchByRfq(id);
     }
-  }, [id, fetchRfqById, fetchByRfq]);
+  }, [id, fetchRfqById]);
+
+  // Load quotations with backend filtering, sorting & pagination
+  const loadQuotations = useCallback(() => {
+    if (id) {
+      fetchByRfq(id, {
+        page: pagination.page,
+        limit: pagination.limit || 6,
+        search: searchQuery || undefined,
+        sortBy,
+      });
+    }
+  }, [id, fetchByRfq, pagination.page, pagination.limit, searchQuery, sortBy]);
+
+  useEffect(() => {
+    loadQuotations();
+  }, [loadQuotations]);
 
   const handleDeleteRfq = async () => {
     if (!id) return;
@@ -58,22 +99,10 @@ export const RfqDetailPage: React.FC = () => {
     }
   };
 
-  // Combine quotations with lowest-price determination
-  const processedQuotes = useMemo(() => {
-    if (!quotations || quotations.length === 0) return [];
-
-    // Find the minimum unit price
-    const minPrice = Math.min(...quotations.map((q) => q.unitPrice));
-
-    return quotations.map((q) => ({
-      ...q,
-      isBestPrice: q.unitPrice === minPrice,
-    }));
-  }, [quotations]);
-
+  // Best quote is determined by lowestUnitPrice from the backend across all quotations
   const bestQuote = useMemo(() => {
-    return processedQuotes.find((q) => q.isBestPrice);
-  }, [processedQuotes]);
+    return quotations.find((q) => q.isBestPrice);
+  }, [quotations]);
 
   if (isRfqLoading && !selectedRfq) {
     return (
@@ -95,7 +124,7 @@ export const RfqDetailPage: React.FC = () => {
           to="/rfqs"
           className="inline-flex items-center text-xs font-semibold text-blue-600 hover:text-blue-800"
         >
-          <ArrowLeft className="h-4 w-4 mr-1" /> Back to RFQs
+          <ArrowLeft className="h-4 w-4 mr-1.5" /> Back to RFQs
         </Link>
         <div className="bg-white p-8 rounded-2xl border border-red-200 text-center space-y-3">
           <AlertCircle className="h-8 w-8 text-red-500 mx-auto" />
@@ -127,7 +156,7 @@ export const RfqDetailPage: React.FC = () => {
             onClick={() => {
               if (id) {
                 fetchRfqById(id);
-                fetchByRfq(id);
+                loadQuotations();
               }
             }}
             disabled={isRfqLoading || isQuotesLoading}
@@ -207,14 +236,14 @@ export const RfqDetailPage: React.FC = () => {
           <div className="flex items-center space-x-2 text-slate-600">
             <Layers className="h-4 w-4 text-purple-500 flex-shrink-0" />
             <div>
-              <p className="text-slate-400 uppercase tracking-wider text-[10px] font-semibold">Quotes Received</p>
-              <p className="font-bold text-slate-800 text-xs sm:text-sm">{processedQuotes.length} bids</p>
+              <p className="text-slate-400 uppercase tracking-wider text-[10px] font-semibold">Total Quotes</p>
+              <p className="font-bold text-slate-800 text-xs sm:text-sm">{pagination.total} bids</p>
             </div>
           </div>
         </div>
 
         {/* Best Price Highlight Banner */}
-        {bestQuote && (
+        {lowestUnitPrice !== undefined && lowestUnitPrice !== null && (
           <div className="p-3.5 sm:p-4 bg-emerald-50 border border-emerald-200/80 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
             <div className="flex items-center space-x-2.5">
               <div className="p-2 bg-emerald-600 text-white rounded-lg flex-shrink-0">
@@ -222,11 +251,20 @@ export const RfqDetailPage: React.FC = () => {
               </div>
               <div>
                 <p className="font-semibold text-emerald-900 text-xs sm:text-sm">
-                  Best Available Price: {formatCurrency(bestQuote.unitPrice)} / unit
+                  Best Available Price: {formatCurrency(lowestUnitPrice)} / unit
                 </p>
                 <p className="text-emerald-700 text-[11px] sm:text-xs">
-                  Offered by <strong>{bestQuote.name}</strong> • Total order:{' '}
-                  <strong>{formatCurrency(bestQuote.unitPrice * selectedRfq.quantity)}</strong>
+                  {bestQuote ? (
+                    <>
+                      Offered by <strong>{bestQuote.name}</strong> • Total order:{' '}
+                      <strong>{formatCurrency(lowestUnitPrice * selectedRfq.quantity)}</strong>
+                    </>
+                  ) : (
+                    <>
+                      Lowest proposal across all supplier quotes • Total order:{' '}
+                      <strong>{formatCurrency(lowestUnitPrice * selectedRfq.quantity)}</strong>
+                    </>
+                  )}
                 </p>
               </div>
             </div>
@@ -248,7 +286,7 @@ export const RfqDetailPage: React.FC = () => {
               Review price quotes, promised lead times, and quote validity dates in INR.
             </p>
           </div>
-          {processedQuotes.length > 0 && (
+          {pagination.total > 0 && (
             <Button
               variant="outline"
               size="sm"
@@ -260,9 +298,45 @@ export const RfqDetailPage: React.FC = () => {
           )}
         </div>
 
-        {isQuotesLoading && processedQuotes.length === 0 ? (
+        {/* Search & Sort Bar for Quotations */}
+        {pagination.total > 0 || searchQuery ? (
+          <div className="bg-white p-3 rounded-xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+            <div className="relative w-full sm:w-72">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                <Search className="h-4 w-4" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search supplier name..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                className="w-full pl-9 pr-3 py-1.5 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+              />
+            </div>
+
+            <div className="flex items-center space-x-2 w-full sm:w-auto justify-end">
+              <ArrowUpDown className="h-4 w-4 text-slate-400" />
+              <label htmlFor="quotation-sort" className="text-xs text-slate-500 whitespace-nowrap">Sort by:</label>
+              <select
+                id="quotation-sort"
+                value={sortBy}
+                onChange={(e) =>
+                  setSort(e.target.value as 'price_asc' | 'price_desc' | 'lead_asc' | 'recent')
+                }
+                className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs sm:text-sm text-slate-700 focus:outline-none focus:border-blue-500 font-medium"
+              >
+                <option value="price_asc">Lowest Price (INR)</option>
+                <option value="price_desc">Highest Price (INR)</option>
+                <option value="lead_asc">Shortest Lead Time</option>
+                <option value="recent">Most Recent</option>
+              </select>
+            </div>
+          </div>
+        ) : null}
+
+        {isQuotesLoading && quotations.length === 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-pulse">
-            {[1, 2].map((i) => (
+            {[1, 2, 3].map((i) => (
               <div key={i} className="bg-white p-5 rounded-xl border border-slate-200 space-y-3">
                 <div className="h-4 bg-slate-200 rounded w-1/3" />
                 <div className="h-7 bg-slate-200 rounded w-1/2" />
@@ -270,20 +344,28 @@ export const RfqDetailPage: React.FC = () => {
               </div>
             ))}
           </div>
-        ) : processedQuotes.length === 0 ? (
+        ) : quotations.length === 0 ? (
           <div className="bg-white rounded-2xl border border-slate-200/80 p-10 text-center shadow-sm space-y-3">
             <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl mx-auto flex items-center justify-center">
               <TrendingDown className="h-6 w-6" />
             </div>
-            <h3 className="text-base font-bold text-slate-800">No Supplier Quotes Yet</h3>
+            <h3 className="text-base font-bold text-slate-800">
+              {searchQuery ? 'No matching supplier quotes found' : 'No Supplier Quotes Yet'}
+            </h3>
             <p className="text-xs text-slate-500 max-w-sm mx-auto">
-              No suppliers have submitted quotations for this RFQ yet. Add quotation proposals to compare prices and lead times.
+              {searchQuery
+                ? 'Try a different supplier name search query.'
+                : 'No suppliers have submitted quotations for this RFQ yet. Add quotation proposals to compare prices and lead times.'}
             </p>
             <div className="pt-2">
               <Button
                 variant="primary"
                 size="md"
-                onClick={() => setIsQuoteModalOpen(true)}
+                onClick={() => {
+                  setSearchInput('');
+                  setSearch('');
+                  setIsQuoteModalOpen(true);
+                }}
                 className="inline-flex items-center gap-1.5"
               >
                 <Plus className="h-4 w-4" /> Add First Supplier Quote
@@ -291,11 +373,23 @@ export const RfqDetailPage: React.FC = () => {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {processedQuotes.map((quote) => (
-              <QuotationCard key={quote.id} quote={quote} quantity={selectedRfq.quantity} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {quotations.map((quote) => (
+                <QuotationCard key={quote.id} quote={quote} quantity={selectedRfq.quantity} />
+              ))}
+            </div>
+
+            {/* Quotations Pagination */}
+            <Pagination
+              page={pagination.page}
+              totalPages={pagination.totalPages}
+              total={pagination.total}
+              limit={pagination.limit}
+              onPageChange={(newPage) => setPage(newPage)}
+              isLoading={isQuotesLoading}
+            />
+          </>
         )}
       </div>
 
@@ -309,7 +403,7 @@ export const RfqDetailPage: React.FC = () => {
           quantity={selectedRfq.quantity}
           onSuccess={() => {
             fetchRfqById(id);
-            fetchByRfq(id);
+            loadQuotations();
           }}
         />
       )}
@@ -321,7 +415,7 @@ export const RfqDetailPage: React.FC = () => {
         onConfirm={handleDeleteRfq}
         partNumber={selectedRfq.partNumber}
         description={selectedRfq.description}
-        quoteCount={processedQuotes.length}
+        quoteCount={pagination.total}
         isDeleting={isDeleting}
       />
     </div>

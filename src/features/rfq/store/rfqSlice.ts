@@ -4,8 +4,11 @@ import {
   type RFQ,
   type CreateRfqInput,
   type RfqFilterParams,
-  type RfqStatus,
+  type RfqStatusFilter,
+  type PaginatedRfqsResponse,
+  type RfqStats,
 } from '../types/rfq.types';
+import { type PaginationMeta } from '../../../types/api';
 
 export interface RfqState {
   rfqs: RFQ[];
@@ -14,7 +17,9 @@ export interface RfqState {
   isSubmitting: boolean;
   error: string | null;
   searchQuery: string;
-  filterStatus: RfqStatus | 'ALL';
+  filterStatus: RfqStatusFilter;
+  pagination: PaginationMeta;
+  stats: RfqStats;
 }
 
 const initialState: RfqState = {
@@ -25,10 +30,24 @@ const initialState: RfqState = {
   error: null,
   searchQuery: '',
   filterStatus: 'ALL',
+  pagination: {
+    page: 1,
+    limit: 9,
+    total: 0,
+    totalPages: 1,
+    hasNext: false,
+    hasPrev: false,
+  },
+  stats: {
+    total: 0,
+    open: 0,
+    quoted: 0,
+    expired: 0,
+  },
 };
 
 export const fetchRfqsThunk = createAsyncThunk<
-  RFQ[],
+  PaginatedRfqsResponse,
   RfqFilterParams | undefined,
   { rejectValue: string }
 >('rfq/fetchAll', async (params, { rejectWithValue }) => {
@@ -89,9 +108,14 @@ export const rfqSlice = createSlice({
   reducers: {
     setSearchQuery: (state, action: PayloadAction<string>) => {
       state.searchQuery = action.payload;
+      state.pagination.page = 1;
     },
-    setFilterStatus: (state, action: PayloadAction<RfqStatus | 'ALL'>) => {
+    setFilterStatus: (state, action: PayloadAction<RfqStatusFilter>) => {
       state.filterStatus = action.payload;
+      state.pagination.page = 1;
+    },
+    setPage: (state, action: PayloadAction<number>) => {
+      state.pagination.page = action.payload;
     },
     clearRfqError: (state) => {
       state.error = null;
@@ -109,7 +133,11 @@ export const rfqSlice = createSlice({
       })
       .addCase(fetchRfqsThunk.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.rfqs = action.payload;
+        state.rfqs = action.payload.data;
+        state.pagination = action.payload.meta;
+        if (action.payload.stats) {
+          state.stats = action.payload.stats;
+        }
       })
       .addCase(fetchRfqsThunk.rejected, (state, action) => {
         state.isLoading = false;
@@ -137,9 +165,8 @@ export const rfqSlice = createSlice({
         state.isSubmitting = true;
         state.error = null;
       })
-      .addCase(createRfqThunk.fulfilled, (state, action) => {
+      .addCase(createRfqThunk.fulfilled, (state) => {
         state.isSubmitting = false;
-        state.rfqs.unshift(action.payload);
       })
       .addCase(createRfqThunk.rejected, (state, action) => {
         state.isSubmitting = false;
@@ -166,5 +193,6 @@ export const rfqSlice = createSlice({
   },
 });
 
-export const { setSearchQuery, setFilterStatus, clearRfqError, clearSelectedRfq } = rfqSlice.actions;
+export const { setSearchQuery, setFilterStatus, setPage, clearRfqError, clearSelectedRfq } =
+  rfqSlice.actions;
 export default rfqSlice.reducer;

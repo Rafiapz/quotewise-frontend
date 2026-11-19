@@ -3,21 +3,34 @@ import { useAppDispatch, useAppSelector } from '../../../store/hooks';
 import {
   fetchQuotationsByRfqThunk,
   createQuotationThunk,
+  setQuotationSearch,
+  setQuotationSort,
+  setQuotationPage,
   setComparisonMetric,
   clearQuotationError,
 } from '../store/quotationSlice';
 import {
   type CreateQuotationInput,
+  type QuotationFilterParams,
 } from '../types/quotation.types';
 
 export const useQuotations = () => {
   const dispatch = useAppDispatch();
-  const { quotations, isLoading, isSubmitting, error, comparisonMetric } =
-    useAppSelector((state) => state.quotations);
+  const {
+    quotations,
+    pagination,
+    lowestUnitPrice,
+    searchQuery,
+    sortBy,
+    isLoading,
+    isSubmitting,
+    error,
+    comparisonMetric,
+  } = useAppSelector((state) => state.quotations);
 
   const fetchByRfq = useCallback(
-    async (rfqId: string) => {
-      await dispatch(fetchQuotationsByRfqThunk(rfqId));
+    async (rfqId: string, params?: QuotationFilterParams) => {
+      await dispatch(fetchQuotationsByRfqThunk({ rfqId, params }));
     },
     [dispatch]
   );
@@ -26,6 +39,27 @@ export const useQuotations = () => {
     async (payload: CreateQuotationInput) => {
       const action = await dispatch(createQuotationThunk(payload));
       return createQuotationThunk.fulfilled.match(action);
+    },
+    [dispatch]
+  );
+
+  const setSearch = useCallback(
+    (search: string) => {
+      dispatch(setQuotationSearch(search));
+    },
+    [dispatch]
+  );
+
+  const setSort = useCallback(
+    (newSortBy: 'price_asc' | 'price_desc' | 'lead_asc' | 'recent') => {
+      dispatch(setQuotationSort(newSortBy));
+    },
+    [dispatch]
+  );
+
+  const setPage = useCallback(
+    (page: number) => {
+      dispatch(setQuotationPage(page));
     },
     [dispatch]
   );
@@ -43,12 +77,19 @@ export const useQuotations = () => {
 
   return {
     quotations,
+    pagination,
+    lowestUnitPrice,
+    searchQuery,
+    sortBy,
     isLoading,
     isSubmitting,
     error,
     comparisonMetric,
     fetchByRfq,
     createQuotation,
+    setSearch,
+    setSort,
+    setPage,
     updateComparisonMetric,
     clearError,
   };

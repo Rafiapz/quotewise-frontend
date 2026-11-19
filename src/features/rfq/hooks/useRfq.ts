@@ -7,18 +7,28 @@ import {
   deleteRfqThunk,
   setSearchQuery,
   setFilterStatus,
+  setPage as setPageAction,
   clearRfqError,
 } from '../store/rfqSlice';
 import {
   type CreateRfqInput,
   type RfqFilterParams,
-  type RfqStatus,
+  type RfqStatusFilter,
 } from '../types/rfq.types';
 
 export const useRfq = () => {
   const dispatch = useAppDispatch();
-  const { rfqs, selectedRfq, isLoading, isSubmitting, error, searchQuery, filterStatus } =
-    useAppSelector((state) => state.rfq);
+  const {
+    rfqs,
+    selectedRfq,
+    isLoading,
+    isSubmitting,
+    error,
+    searchQuery,
+    filterStatus,
+    pagination,
+    stats,
+  } = useAppSelector((state) => state.rfq);
 
   const fetchRfqs = useCallback(
     async (params?: RfqFilterParams) => {
@@ -58,8 +68,15 @@ export const useRfq = () => {
   );
 
   const updateFilterStatus = useCallback(
-    (status: RfqStatus | 'ALL') => {
+    (status: RfqStatusFilter) => {
       dispatch(setFilterStatus(status));
+    },
+    [dispatch]
+  );
+
+  const setPage = useCallback(
+    (page: number) => {
+      dispatch(setPageAction(page));
     },
     [dispatch]
   );
@@ -76,12 +93,15 @@ export const useRfq = () => {
     error,
     searchQuery,
     filterStatus,
+    pagination,
+    stats,
     fetchRfqs,
     fetchRfqById,
     createRfq,
     deleteRfq,
     updateSearchQuery,
     updateFilterStatus,
+    setPage,
     clearError,
   };
 };

@@ -1,41 +1,60 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Plus, Search, Layers, Clock, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
 import { useRfq } from '../hooks/useRfq';
 import { RfqCard } from '../components/RfqCard';
 import { CreateRfqModal } from '../components/CreateRfqModal';
 import { Button } from '../../../components/ui/Button';
+import { Pagination } from '../../../components/ui/Pagination';
+import { useDebounce } from '../../../hooks/useDebounce';
+import { type RfqStatusFilter } from '../types/rfq.types';
 
 export const RfqListPage: React.FC = () => {
-  const { rfqs, isLoading, error, fetchRfqs } = useRfq();
+  const {
+    rfqs,
+    isLoading,
+    error,
+    pagination,
+    stats,
+    searchQuery,
+    filterStatus,
+    fetchRfqs,
+    updateSearchQuery,
+    updateFilterStatus,
+    setPage,
+  } = useRfq();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'ALL' | 'OPEN' | 'QUOTED' | 'EXPIRED'>('ALL');
+  const [searchInput, setSearchInput] = useState(searchQuery);
+  const debouncedSearch = useDebounce(searchInput, 350);
+
+  // Sync debounced search to redux query state
+  useEffect(() => {
+    if (debouncedSearch !== searchQuery) {
+      updateSearchQuery(debouncedSearch);
+    }
+  }, [debouncedSearch, searchQuery, updateSearchQuery]);
+
+  // Load RFQs from backend whenever page, debounced query, or filter changes
+  const loadData = useCallback(() => {
+    fetchRfqs({
+      page: pagination.page,
+      limit: pagination.limit || 9,
+      search: searchQuery || undefined,
+      status: filterStatus,
+    });
+  }, [fetchRfqs, pagination.page, pagination.limit, searchQuery, filterStatus]);
 
   useEffect(() => {
-    fetchRfqs();
-  }, [fetchRfqs]);
+    loadData();
+  }, [loadData]);
 
-  // Filtered RFQs based on search and status
-  const filteredRfqs = useMemo(() => {
-    return rfqs.filter((rfq) => {
-      const matchesSearch =
-        rfq.partNumber.toLowerCase().includes(searchTerm.toLowerCase().trim()) ||
-        rfq.description.toLowerCase().includes(searchTerm.toLowerCase().trim());
+  const handleStatusChange = (status: RfqStatusFilter) => {
+    updateFilterStatus(status);
+  };
 
-      const rfqStatus = rfq.status || 'OPEN';
-      const matchesStatus = statusFilter === 'ALL' || rfqStatus === statusFilter;
-
-      return matchesSearch && matchesStatus;
-    });
-  }, [rfqs, searchTerm, statusFilter]);
-
-  // Summary Metrics
-  const stats = useMemo(() => {
-    const total = rfqs.length;
-    const open = rfqs.filter((r) => !r.status || r.status === 'OPEN').length;
-    const quoted = rfqs.filter((r) => r.status === 'QUOTED' || (r.quoteCount && r.quoteCount > 0)).length;
-    return { total, open, quoted };
-  }, [rfqs]);
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
 
   return (
     <div className="space-y-6">
@@ -51,7 +70,7 @@ export const RfqListPage: React.FC = () => {
           <Button
             variant="outline"
             size="md"
-            onClick={() => fetchRfqs()}
+            onClick={loadData}
             disabled={isLoading}
             className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 text-xs text-slate-600"
             title="Refresh RFQs list"
@@ -69,7 +88,7 @@ export const RfqListPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats Cards (Aggregated server-side across all active records) */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         <div className="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200/80 shadow-sm flex items-center space-x-3.5">
           <div className="p-2 sm:p-2.5 bg-blue-50 text-blue-600 rounded-lg">
@@ -111,8 +130,8 @@ export const RfqListPage: React.FC = () => {
           <input
             type="text"
             placeholder="Search part # or description..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             className="w-full pl-9 pr-3 py-2 sm:py-1.5 rounded-lg border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
           />
         </div>
@@ -122,9 +141,9 @@ export const RfqListPage: React.FC = () => {
             <button
               key={status}
               type="button"
-              onClick={() => setStatusFilter(status)}
+              onClick={() => handleStatusChange(status)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
-                statusFilter === status
+                filterStatus === status
                   ? 'bg-blue-600 text-white shadow-sm'
                   : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
               }`}
@@ -164,18 +183,18 @@ export const RfqListPage: React.FC = () => {
             </div>
           ))}
         </div>
-      ) : filteredRfqs.length === 0 ? (
+      ) : rfqs.length === 0 ? (
         <div className="bg-white rounded-2xl border border-slate-200/80 p-12 text-center shadow-sm">
           <div className="mx-auto w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-4">
             <Layers className="h-6 w-6" />
           </div>
           <h3 className="text-base font-semibold text-slate-800">
-            {searchTerm || statusFilter !== 'ALL'
+            {searchQuery || filterStatus !== 'ALL'
               ? 'No matching RFQs found'
               : 'No RFQs created yet'}
           </h3>
           <p className="text-sm text-slate-500 mt-1 max-w-sm mx-auto">
-            {searchTerm || statusFilter !== 'ALL'
+            {searchQuery || filterStatus !== 'ALL'
               ? 'Try modifying your search term or status filter to see other requests.'
               : 'Create your first Request for Quotation to start inviting and comparing supplier bids.'}
           </p>
@@ -184,8 +203,9 @@ export const RfqListPage: React.FC = () => {
               variant="primary"
               size="md"
               onClick={() => {
-                setSearchTerm('');
-                setStatusFilter('ALL');
+                setSearchInput('');
+                updateSearchQuery('');
+                updateFilterStatus('ALL');
                 setIsModalOpen(true);
               }}
               className="inline-flex items-center gap-1.5"
@@ -195,15 +215,33 @@ export const RfqListPage: React.FC = () => {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredRfqs.map((rfq) => (
-            <RfqCard key={rfq.id} rfq={rfq} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {rfqs.map((rfq) => (
+              <RfqCard key={rfq.id} rfq={rfq} />
+            ))}
+          </div>
+
+          {/* Backend Pagination Controls */}
+          <Pagination
+            page={pagination.page}
+            totalPages={pagination.totalPages}
+            total={pagination.total}
+            limit={pagination.limit}
+            onPageChange={handlePageChange}
+            isLoading={isLoading}
+          />
+        </>
       )}
 
       {/* Create RFQ Modal */}
-      <CreateRfqModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <CreateRfqModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          loadData();
+        }}
+      />
     </div>
   );
 };
