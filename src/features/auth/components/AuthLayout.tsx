@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Layers, TrendingDown, Clock, ShieldCheck } from 'lucide-react';
+import { Layers } from 'lucide-react';
 
 export interface AuthLayoutProps {
   children: React.ReactNode;
@@ -25,22 +25,6 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children, title, subtitl
       <div className="mt-6 sm:mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-6 sm:py-8 px-5 sm:px-10 shadow-sm rounded-2xl border border-slate-200/80">
           {children}
-        </div>
-
-        {/* Feature Badges */}
-        <div className="mt-8 grid grid-cols-3 gap-2 text-center text-xs text-slate-400">
-          <div className="flex flex-col items-center gap-1">
-            <ShieldCheck className="h-4 w-4 text-slate-400" />
-            <span>Secure Access</span>
-          </div>
-          <div className="flex flex-col items-center gap-1">
-            <TrendingDown className="h-4 w-4 text-slate-400" />
-            <span>Cost Efficiency</span>
-          </div>
-          <div className="flex flex-col items-center gap-1">
-            <Clock className="h-4 w-4 text-slate-400" />
-            <span>Fast Quotes</span>
-          </div>
         </div>
       </div>
     </div>

@@ -24,9 +24,9 @@ const initialState: AuthState = {
   user: initialUser,
   token: initialToken,
   isAuthenticated: !!initialUser,
-  isCheckingAuth: true,
+  isCheckingAuth: false,
   isSubmitting: false,
-  isLoading: true,
+  isLoading: false,
   error: null,
 };
 
@@ -99,8 +99,8 @@ export const authSlice = createSlice({
     // checkAuthThunk: initial session hydration
     builder
       .addCase(checkAuthThunk.pending, (state) => {
-        state.isCheckingAuth = true;
-        state.isLoading = true;
+        state.isCheckingAuth = false;
+        state.isLoading = false;
       })
       .addCase(checkAuthThunk.fulfilled, (state, action) => {
         state.isCheckingAuth = false;
