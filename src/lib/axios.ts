@@ -71,8 +71,10 @@ apiClient.interceptors.response.use(
       }
     }
 
-    // Do not show an error toast for silent auth verification on /auth/me when unauthenticated
-    const isSilentAuthCheck = error.config?.url?.includes('/auth/me') && error.response?.status === 401;
+    // Do not show an error toast for silent auth verification on /auth/me or /auth/logout when unauthenticated
+    const isSilentAuthCheck =
+      (error.config?.url?.includes('/auth/me') || error.config?.url?.includes('/auth/logout')) &&
+      error.response?.status === 401;
 
     if (!isSilentAuthCheck) {
       toast.error(errorMessage);

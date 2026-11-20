@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
+import { logoutThunk } from '../../auth/store/authSlice';
 import { rfqService } from '../services/rfq.service';
 import {
   type RFQ,
@@ -209,6 +210,13 @@ export const rfqSlice = createSlice({
       .addCase(deleteRfqThunk.rejected, (state, action) => {
         state.isSubmitting = false;
         state.error = action.payload || 'Failed to delete RFQ';
+      })
+      // Reset RFQ state on logout
+      .addCase(logoutThunk.pending, (state) => {
+        state.isLoading = false;
+      })
+      .addCase(logoutThunk.fulfilled, () => {
+        return initialState;
       });
   },
 });

@@ -13,6 +13,7 @@ export interface AuthState {
   isAuthenticated: boolean;
   isCheckingAuth: boolean;
   isSubmitting: boolean;
+  isLoggingOut: boolean;
   isLoading: boolean;
   error: string | null;
 }
@@ -26,6 +27,7 @@ const initialState: AuthState = {
   isAuthenticated: !!initialUser,
   isCheckingAuth: false,
   isSubmitting: false,
+  isLoggingOut: false,
   isLoading: false,
   error: null,
 };
@@ -155,17 +157,17 @@ export const authSlice = createSlice({
     // logoutThunk
     builder
       .addCase(logoutThunk.pending, (state) => {
-        state.isSubmitting = true;
+        state.isLoggingOut = true;
       })
       .addCase(logoutThunk.fulfilled, (state) => {
-        state.isSubmitting = false;
+        state.isLoggingOut = false;
         state.user = null;
         state.token = null;
         state.isAuthenticated = false;
         state.error = null;
       })
       .addCase(logoutThunk.rejected, (state) => {
-        state.isSubmitting = false;
+        state.isLoggingOut = false;
         state.user = null;
         state.token = null;
         state.isAuthenticated = false;

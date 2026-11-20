@@ -120,13 +120,16 @@ export const RfqDetailPage: React.FC = () => {
   // Best quote: cheapest quote that is still valid AND can arrive in time for neededBy
   const bestQuote = useMemo(() => {
     if (!selectedRfq || selectedRfq.id !== id) return null;
-    if (selectedRfq.bestQuote) {
-      return (
-        quotations.find((q) => q.id === selectedRfq.bestQuote?.id) ||
-        selectedRfq.bestQuote
-      );
+
+    const allCandidates = [...quotations];
+    if (
+      selectedRfq.bestQuote &&
+      !allCandidates.some((q) => q.id === selectedRfq.bestQuote?.id)
+    ) {
+      allCandidates.push(selectedRfq.bestQuote);
     }
-    return findBestQuotation(quotations, selectedRfq.neededBy);
+
+    return findBestQuotation(allCandidates, selectedRfq.neededBy);
   }, [quotations, selectedRfq, id]);
 
   // If loading or the currently loaded RFQ doesn't match the current route ID, don't show stale RFQ
@@ -400,9 +403,7 @@ export const RfqDetailPage: React.FC = () => {
                   key={quote.id}
                   quote={{
                     ...quote,
-                    isBestPrice: Boolean(
-                      bestQuote && bestQuote.id === quote.id,
-                    ),
+                    isBestPrice: Boolean(bestQuote && bestQuote.id === quote.id),
                   }}
                   quantity={selectedRfq.quantity}
                 />

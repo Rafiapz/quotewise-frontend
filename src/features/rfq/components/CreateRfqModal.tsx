@@ -187,6 +187,7 @@ export const CreateRfqModal: React.FC<CreateRfqModalProps> = ({ isOpen, onClose 
                 </div>
                 <input
                   type="date"
+                  min={new Date().toISOString().split('T')[0]}
                   value={neededBy}
                   onChange={(e) => {
                     setNeededBy(e.target.value);

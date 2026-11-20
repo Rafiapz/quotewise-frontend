@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
+import { logoutThunk } from '../../auth/store/authSlice';
 import { quotationService } from '../services/quotation.service';
 import {
   type SupplierQuote,
@@ -155,6 +156,13 @@ export const quotationSlice = createSlice({
       .addCase(createQuotationThunk.rejected, (state, action) => {
         state.isSubmitting = false;
         state.error = action.payload || 'Failed to submit quotation';
+      })
+      // Reset quotations state on logout
+      .addCase(logoutThunk.pending, (state) => {
+        state.isLoading = false;
+      })
+      .addCase(logoutThunk.fulfilled, () => {
+        return initialState;
       });
   },
 });

@@ -1,15 +1,19 @@
 import React from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { Layers, FileText, Bell, LogOut, LogIn } from 'lucide-react';
+import { Layers, FileText, Bell, LogOut, LogIn, Loader2 } from 'lucide-react';
 import { useAuth } from '../../features/auth/hooks/useAuth';
 
 export const Header: React.FC = () => {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout, isLoggingOut } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
+  const handleLogout = async () => {
+    if (isLoggingOut) return;
+    try {
+      await logout();
+    } finally {
+      navigate('/login', { replace: true });
+    }
   };
 
   const initials = user?.companyName
@@ -81,11 +85,16 @@ export const Header: React.FC = () => {
               <button
                 type="button"
                 onClick={handleLogout}
-                title="Sign out"
+                disabled={isLoggingOut}
+                title={isLoggingOut ? 'Signing out...' : 'Sign out'}
                 aria-label="Sign out"
-                className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center justify-center min-w-[32px] min-h-[32px]"
               >
-                <LogOut className="h-4 w-4" />
+                {isLoggingOut ? (
+                  <Loader2 className="h-4 w-4 animate-spin text-slate-500" />
+                ) : (
+                  <LogOut className="h-4 w-4" />
+                )}
               </button>
             </div>
           ) : (

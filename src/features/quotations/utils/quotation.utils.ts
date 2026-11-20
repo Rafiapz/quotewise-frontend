@@ -1,9 +1,9 @@
 import { type SupplierQuote } from '../types/quotation.types';
 
 /**
- * Calculates the BEST quote dynamically:
- * - The cheapest quote that is still valid AND can arrive in time for the "needed by" date.
- * - A cheaper quote that would arrive late is NOT the best quote.
+ * Finds the BEST quote for an RFQ:
+ * The cheapest quote that is still valid AND can arrive in time for the "needed by" date.
+ * A cheaper quote that would arrive late is not the best quote.
  */
 export const findBestQuotation = (
   quotes: SupplierQuote[],
@@ -11,30 +11,27 @@ export const findBestQuotation = (
 ): SupplierQuote | null => {
   if (!quotes || quotes.length === 0) return null;
 
-  const now = new Date();
+  const now = new Date().getTime();
   const neededByTime = neededBy ? new Date(neededBy).getTime() : undefined;
 
-  // Filter quotes: must be currently valid AND arrive on or before neededBy
+  // 1. Filter: quotes that are still valid AND arrive in time
   const eligibleQuotes = quotes.filter((q) => {
-    const isValid = new Date(q.validUntil).getTime() >= now.getTime();
-    if (!isValid) return false;
-
-    if (neededByTime !== undefined) {
-      const arrivalTime = new Date(q.leadTime).getTime();
-      if (arrivalTime > neededByTime) return false; // Arrives late!
-    }
-    return true;
+    const isValid = new Date(q.validUntil).getTime() >= now;
+    const arrivesInTime =
+      neededByTime === undefined || new Date(q.leadTime).getTime() <= neededByTime;
+    return isValid && arrivesInTime;
   });
 
   if (eligibleQuotes.length === 0) return null;
 
-  // Sort: lowest price first; on price tie, earliest delivery first
-  eligibleQuotes.sort((a, b) => {
-    if (a.unitPrice !== b.unitPrice) {
-      return a.unitPrice - b.unitPrice;
+  // 2. Select cheapest; if tied on price, pick earliest delivery
+  return eligibleQuotes.reduce((best, current) => {
+    if (current.unitPrice < best.unitPrice) return current;
+    if (current.unitPrice === best.unitPrice) {
+      return new Date(current.leadTime).getTime() < new Date(best.leadTime).getTime()
+        ? current
+        : best;
     }
-    return new Date(a.leadTime).getTime() - new Date(b.leadTime).getTime();
+    return best;
   });
-
-  return eligibleQuotes[0];
 };

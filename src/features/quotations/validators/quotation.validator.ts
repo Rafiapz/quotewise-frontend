@@ -32,5 +32,13 @@ export const createQuotationSchema: yup.ObjectSchema<CreateQuotationFormValues> 
       if (!value) return false;
       const d = new Date(value);
       return !isNaN(d.getTime());
+    })
+    .test("not-in-past", "Quote validity date cannot be in the past", (value) => {
+      if (!value) return false;
+      const d = new Date(value);
+      if (isNaN(d.getTime())) return false;
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
+      return d >= startOfToday;
     }),
 });
