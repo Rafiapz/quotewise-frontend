@@ -67,7 +67,7 @@ export const RfqListPage: React.FC = () => {
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">Requests for Quotation (RFQs)</h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Create part requests, solicit supplier bids, and compare quotations.
+            Create part requests, receive supplier quotes, and compare quotations.
           </p>
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -109,7 +109,7 @@ export const RfqListPage: React.FC = () => {
             <Clock className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-[11px] sm:text-xs font-medium text-slate-500 uppercase tracking-wider">Open for Bids</p>
+            <p className="text-[11px] sm:text-xs font-medium text-slate-500 uppercase tracking-wider">Open (No Quotes)</p>
             <p className="text-lg sm:text-xl font-bold text-slate-900 mt-0.5">{stats.open}</p>
           </div>
         </div>
@@ -200,7 +200,7 @@ export const RfqListPage: React.FC = () => {
           <p className="text-sm text-slate-500 mt-1 max-w-sm mx-auto">
             {searchQuery || filterStatus !== 'ALL'
               ? 'Try modifying your search term or status filter to see other requests.'
-              : 'Create your first Request for Quotation to start inviting and comparing supplier bids.'}
+              : 'Create your first Request for Quotation to start receiving and comparing supplier quotes.'}
           </p>
           <div className="mt-6">
             <Button

@@ -20,6 +20,7 @@ export interface QuotationState {
   error: string | null;
   comparisonMetric: 'unitPrice' | 'leadTime';
   currentRequestId: string | null;
+  currentRfqId: string | null;
 }
 
 const initialState: QuotationState = {
@@ -40,6 +41,7 @@ const initialState: QuotationState = {
   error: null,
   comparisonMetric: 'unitPrice',
   currentRequestId: null,
+  currentRfqId: null,
 };
 
 export const fetchQuotationsByRfqThunk = createAsyncThunk<
@@ -97,6 +99,14 @@ export const quotationSlice = createSlice({
     clearQuotationError: (state) => {
       state.error = null;
     },
+    clearQuotations: (state) => {
+      state.quotations = [];
+      state.pagination = { ...initialState.pagination };
+      state.lowestUnitPrice = undefined;
+      state.searchQuery = '';
+      state.currentRfqId = null;
+      state.currentRequestId = null;
+    },
   },
   extraReducers: (builder) => {
     // fetchQuotationsByRfqThunk
@@ -105,6 +115,12 @@ export const quotationSlice = createSlice({
         state.isLoading = true;
         state.error = null;
         state.currentRequestId = action.meta.requestId;
+        // If switching to a different RFQ, clear old quotations immediately
+        if (state.currentRfqId !== action.meta.arg.rfqId) {
+          state.quotations = [];
+          state.lowestUnitPrice = undefined;
+          state.currentRfqId = action.meta.arg.rfqId;
+        }
       })
       .addCase(fetchQuotationsByRfqThunk.fulfilled, (state, action) => {
         if (state.currentRequestId === action.meta.requestId) {
@@ -112,6 +128,7 @@ export const quotationSlice = createSlice({
           state.quotations = action.payload.data;
           state.pagination = action.payload.meta;
           state.lowestUnitPrice = action.payload.lowestUnitPrice;
+          state.currentRfqId = action.meta.arg.rfqId;
           state.currentRequestId = null;
         }
       })
@@ -148,6 +165,7 @@ export const {
   setQuotationPage,
   setComparisonMetric,
   clearQuotationError,
+  clearQuotations,
 } = quotationSlice.actions;
 
 export default quotationSlice.reducer;

@@ -163,9 +163,12 @@ export const rfqSlice = createSlice({
 
     // fetchRfqByIdThunk
     builder
-      .addCase(fetchRfqByIdThunk.pending, (state) => {
+      .addCase(fetchRfqByIdThunk.pending, (state, action) => {
         state.isLoading = true;
         state.error = null;
+        if (state.selectedRfq?.id !== action.meta.arg) {
+          state.selectedRfq = null;
+        }
       })
       .addCase(fetchRfqByIdThunk.fulfilled, (state, action) => {
         state.isLoading = false;

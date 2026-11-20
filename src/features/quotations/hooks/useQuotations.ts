@@ -8,6 +8,7 @@ import {
   setQuotationPage,
   setComparisonMetric,
   clearQuotationError,
+  clearQuotations as clearQuotationsAction,
 } from '../store/quotationSlice';
 import {
   type CreateQuotationInput,
@@ -75,6 +76,10 @@ export const useQuotations = () => {
     dispatch(clearQuotationError());
   }, [dispatch]);
 
+  const clearQuotations = useCallback(() => {
+    dispatch(clearQuotationsAction());
+  }, [dispatch]);
+
   return {
     quotations,
     pagination,
@@ -92,5 +97,6 @@ export const useQuotations = () => {
     setPage,
     updateComparisonMetric,
     clearError,
+    clearQuotations,
   };
 };

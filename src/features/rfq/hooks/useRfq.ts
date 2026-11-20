@@ -9,6 +9,7 @@ import {
   setFilterStatus,
   setPage as setPageAction,
   clearRfqError,
+  clearSelectedRfq,
 } from '../store/rfqSlice';
 import {
   type CreateRfqInput,
@@ -85,6 +86,10 @@ export const useRfq = () => {
     dispatch(clearRfqError());
   }, [dispatch]);
 
+  const clearSelected = useCallback(() => {
+    dispatch(clearSelectedRfq());
+  }, [dispatch]);
+
   return {
     rfqs,
     selectedRfq,
@@ -103,5 +108,6 @@ export const useRfq = () => {
     updateFilterStatus,
     setPage,
     clearError,
+    clearSelectedRfq: clearSelected,
   };
 };

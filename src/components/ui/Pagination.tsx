@@ -53,11 +53,22 @@ export const Pagination: React.FC<PaginationProps> = ({
   const pageNumbers = getPageNumbers();
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 px-2">
-      <div className="text-sm text-slate-500 text-center sm:text-left">
-        Showing <span className="font-semibold text-slate-700">{startItem}</span> to{' '}
-        <span className="font-semibold text-slate-700">{endItem}</span> of{' '}
-        <span className="font-semibold text-slate-700">{total}</span> results
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-5 pb-2 border-t border-slate-200/80">
+      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-600 font-medium">
+        <span className="w-1.5 h-1.5 rounded-full bg-blue-600 flex-shrink-0" />
+        <span>Showing</span>
+        {startItem === endItem ? (
+          <span className="font-semibold text-slate-900">{startItem}</span>
+        ) : (
+          <>
+            <span className="font-semibold text-slate-900">{startItem}</span>
+            <span className="text-slate-400 font-normal">to</span>
+            <span className="font-semibold text-slate-900">{endItem}</span>
+          </>
+        )}
+        <span className="text-slate-400 font-normal">of</span>
+        <span className="font-semibold text-slate-900">{total}</span>
+        <span>{total === 1 ? 'result' : 'results'}</span>
       </div>
 
       <div className="flex items-center space-x-1 sm:space-x-2">
@@ -65,7 +76,7 @@ export const Pagination: React.FC<PaginationProps> = ({
           type="button"
           onClick={() => onPageChange(page - 1)}
           disabled={page <= 1 || isLoading}
-          className="inline-flex items-center px-2.5 py-1.5 text-xs sm:text-sm font-medium rounded-lg border border-slate-300 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="inline-flex items-center px-2.5 py-1.5 text-xs sm:text-sm font-medium rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-xs"
           aria-label="Previous page"
         >
           <ChevronLeft className="w-4 h-4 mr-0.5 sm:mr-1" />
@@ -110,7 +121,7 @@ export const Pagination: React.FC<PaginationProps> = ({
           type="button"
           onClick={() => onPageChange(page + 1)}
           disabled={page >= totalPages || isLoading}
-          className="inline-flex items-center px-2.5 py-1.5 text-xs sm:text-sm font-medium rounded-lg border border-slate-300 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="inline-flex items-center px-2.5 py-1.5 text-xs sm:text-sm font-medium rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-xs"
           aria-label="Next page"
         >
           <span className="hidden xs:inline">Next</span>

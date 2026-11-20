@@ -9,19 +9,55 @@ export const apiClient: AxiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000,
+  timeout: 30000, // 30s timeout to gracefully accommodate serverless & cloud cold starts
+});
+
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem('quotewise_auth_token');
+  if (token && config.headers) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => response,
-  (error: AxiosError) => {
+  async (error: AxiosError) => {
+    const config = error.config as (typeof error.config & { _retryCount?: number }) | undefined;
+
+    // Automatically retry GET requests once on cold-start timeouts or connection drops
+    const isTimeout = error.code === 'ECONNABORTED' || error.message.includes('timeout');
+    const isNetworkError = !error.response && error.request;
+
+    if (
+      config &&
+      config.method?.toLowerCase() === 'get' &&
+      (!config._retryCount || config._retryCount < 1) &&
+      (isTimeout || isNetworkError)
+    ) {
+      config._retryCount = (config._retryCount || 0) + 1;
+      // Exponential short delay before retry (1.5 seconds)
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      return apiClient(config);
+    }
+
     const data = error.response?.data as {
       message?: string;
       errors?: Record<string, string[]>;
       detail?: string;
     } | undefined;
 
-    let errorMessage = data?.message || error.message || 'An unexpected error occurred';
+    let errorMessage = data?.message;
+
+    // Friendly message for timeouts and cold starts
+    if (!errorMessage && isTimeout) {
+      errorMessage =
+        'The server is taking longer than expected to respond (it may be waking up from sleep). Please try again in a moment.';
+    } else if (!errorMessage && isNetworkError) {
+      errorMessage = 'Unable to reach the server. Please check your internet connection.';
+    } else if (!errorMessage) {
+      errorMessage = error.message || 'An unexpected error occurred';
+    }
 
     // If validation errors are returned, show the first specific error message
     if (data?.errors && typeof data.errors === 'object') {

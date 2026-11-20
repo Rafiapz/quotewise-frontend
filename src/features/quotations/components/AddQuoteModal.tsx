@@ -235,7 +235,7 @@ export const AddQuoteModal: React.FC<AddQuoteModalProps> = ({
           {/* Real-time Total Estimate Preview */}
           {calculatedTotal !== undefined && (
             <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs text-slate-600">
-              <span>Total calculated bid value ({quantity} units):</span>
+              <span>Total calculated quote value ({quantity} units):</span>
               <span className="text-sm font-bold text-slate-900">
                 {formatCurrency(calculatedTotal)}
               </span>

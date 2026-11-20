@@ -39,7 +39,7 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({ quote, quantity })
             <span className="text-[11px] uppercase tracking-wider font-bold text-slate-400">Supplier</span>
             {isBest && (
               <span className="inline-flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 uppercase tracking-wide">
-                Lowest Bid
+                Best Quote
               </span>
             )}
           </div>

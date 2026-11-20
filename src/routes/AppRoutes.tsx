@@ -9,6 +9,7 @@ const LoginPage = lazy(() => import('../features/auth/pages/LoginPage'));
 const RegisterPage = lazy(() => import('../features/auth/pages/RegisterPage'));
 const RfqListPage = lazy(() => import('../features/rfq/pages/RfqListPage'));
 const RfqDetailPage = lazy(() => import('../features/rfq/pages/RfqDetailPage'));
+const NotFoundPage = lazy(() => import('../pages/NotFoundPage'));
 
 const PageFallback: React.FC = () => (
   <div className="flex flex-col items-center justify-center min-h-[60vh] w-full p-8">
@@ -47,9 +48,12 @@ export const AppRoutes: React.FC = () => {
             <Route path="/rfqs" element={<RfqListPage />} />
             <Route path="/rfqs/:id" element={<RfqDetailPage />} />
             <Route path="/quotations" element={<Navigate to="/rfqs" replace />} />
-            <Route path="*" element={<Navigate to="/rfqs" replace />} />
           </Route>
         </Route>
+
+        {/* 404 Catch-All Route */}
+        <Route path="/404" element={<NotFoundPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Suspense>
   );

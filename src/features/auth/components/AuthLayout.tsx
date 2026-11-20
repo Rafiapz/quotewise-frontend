@@ -39,7 +39,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children, title, subtitl
           </div>
           <div className="flex flex-col items-center gap-1">
             <Clock className="h-4 w-4 text-slate-400" />
-            <span>Fast Bids</span>
+            <span>Fast Quotes</span>
           </div>
         </div>
       </div>
