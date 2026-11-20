@@ -5,6 +5,8 @@ import { toast } from 'react-toastify';
 import { Button } from '../../../components/ui/Button';
 import { useQuotations } from '../hooks/useQuotations';
 import { formatCurrency } from '../../../utils/formatters';
+import { createQuotationSchema, CreateQuotationFormValues } from '../validators/quotation.validator';
+import { validateSyncWithYup } from '../../../utils/validation.utils';
 
 export interface AddQuoteModalProps {
   isOpen: boolean;
@@ -29,12 +31,7 @@ export const AddQuoteModal: React.FC<AddQuoteModalProps> = ({
   const [unitPrice, setUnitPrice] = useState<number | ''>('');
   const [leadTimeDays, setLeadTimeDays] = useState<number | ''>('');
   const [validUntil, setValidUntil] = useState('');
-  const [errors, setErrors] = useState<{
-    name?: string;
-    unitPrice?: string;
-    leadTimeDays?: string;
-    validUntil?: string;
-  }>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof CreateQuotationFormValues, string>>>({});
 
   useEffect(() => {
     if (isOpen) {
@@ -50,36 +47,14 @@ export const AddQuoteModal: React.FC<AddQuoteModalProps> = ({
   if (!isOpen) return null;
 
   const validate = (): boolean => {
-    const newErrors: {
-      name?: string;
-      unitPrice?: string;
-      leadTimeDays?: string;
-      validUntil?: string;
-    } = {};
-
-    if (!name.trim()) {
-      newErrors.name = 'Supplier name is required';
-    }
-
-    if (unitPrice === '' || isNaN(Number(unitPrice)) || Number(unitPrice) <= 0) {
-      newErrors.unitPrice = 'Unit price must be greater than 0';
-    }
-
-    if (leadTimeDays === '' || isNaN(Number(leadTimeDays)) || Number(leadTimeDays) <= 0) {
-      newErrors.leadTimeDays = 'Lead time must be at least 1 day';
-    }
-
-    if (!validUntil) {
-      newErrors.validUntil = 'Quote validity date is required';
-    } else {
-      const selected = new Date(validUntil);
-      if (isNaN(selected.getTime())) {
-        newErrors.validUntil = 'Invalid date format';
-      }
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const result = validateSyncWithYup(createQuotationSchema, {
+      name,
+      unitPrice,
+      leadTimeDays,
+      validUntil,
+    });
+    setErrors(result.errors);
+    return result.isValid;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

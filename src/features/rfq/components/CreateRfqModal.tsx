@@ -4,6 +4,8 @@ import { X, Plus, Calendar, Hash, FileText, Layers } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { Button } from '../../../components/ui/Button';
 import { useRfq } from '../hooks/useRfq';
+import { createRfqSchema, CreateRfqFormValues } from '../validators/rfq.validator';
+import { validateSyncWithYup } from '../../../utils/validation.utils';
 
 export interface CreateRfqModalProps {
   isOpen: boolean;
@@ -17,12 +19,7 @@ export const CreateRfqModal: React.FC<CreateRfqModalProps> = ({ isOpen, onClose 
   const [description, setDescription] = useState('');
   const [quantity, setQuantity] = useState<number | ''>('');
   const [neededBy, setNeededBy] = useState('');
-  const [errors, setErrors] = useState<{
-    partNumber?: string;
-    description?: string;
-    quantity?: string;
-    neededBy?: string;
-  }>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof CreateRfqFormValues, string>>>({});
 
   useEffect(() => {
     if (isOpen) {
@@ -38,36 +35,14 @@ export const CreateRfqModal: React.FC<CreateRfqModalProps> = ({ isOpen, onClose 
   if (!isOpen) return null;
 
   const validate = (): boolean => {
-    const newErrors: {
-      partNumber?: string;
-      description?: string;
-      quantity?: string;
-      neededBy?: string;
-    } = {};
-
-    if (!partNumber.trim()) {
-      newErrors.partNumber = 'Part number is required';
-    }
-
-    if (!description.trim()) {
-      newErrors.description = 'Description is required';
-    }
-
-    if (quantity === '' || isNaN(Number(quantity)) || Number(quantity) <= 0) {
-      newErrors.quantity = 'Quantity must be a positive number';
-    }
-
-    if (!neededBy) {
-      newErrors.neededBy = 'Required delivery date is required';
-    } else {
-      const selectedDate = new Date(neededBy);
-      if (isNaN(selectedDate.getTime())) {
-        newErrors.neededBy = 'Invalid date format';
-      }
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const result = validateSyncWithYup(createRfqSchema, {
+      partNumber,
+      description,
+      quantity,
+      neededBy,
+    });
+    setErrors(result.errors);
+    return result.isValid;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

@@ -5,6 +5,8 @@ import { toast } from 'react-toastify';
 import { useAuth } from '../hooks/useAuth';
 import { AuthLayout } from '../components/AuthLayout';
 import { Button } from '../../../components/ui/Button';
+import { registerSchema, RegisterFormValues } from '../validators/auth.validator';
+import { validateSyncWithYup } from '../../../utils/validation.utils';
 
 export const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
@@ -15,43 +17,17 @@ export const RegisterPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [validationErrors, setValidationErrors] = useState<{
-    companyName?: string;
-    email?: string;
-    password?: string;
-    confirmPassword?: string;
-  }>({});
+  const [validationErrors, setValidationErrors] = useState<Partial<Record<keyof RegisterFormValues, string>>>({});
 
   const validate = (): boolean => {
-    const errors: {
-      companyName?: string;
-      email?: string;
-      password?: string;
-      confirmPassword?: string;
-    } = {};
-
-    if (!companyName.trim()) {
-      errors.companyName = 'Company name is required';
-    }
-
-    if (!email.trim()) {
-      errors.email = 'Email address is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errors.email = 'Please enter a valid email address';
-    }
-
-    if (!password) {
-      errors.password = 'Password is required';
-    } else if (password.length < 8) {
-      errors.password = 'Password must be at least 8 characters';
-    }
-
-    if (password !== confirmPassword) {
-      errors.confirmPassword = 'Passwords do not match';
-    }
-
-    setValidationErrors(errors);
-    return Object.keys(errors).length === 0;
+    const result = validateSyncWithYup(registerSchema, {
+      companyName,
+      email,
+      password,
+      confirmPassword,
+    });
+    setValidationErrors(result.errors);
+    return result.isValid;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

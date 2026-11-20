@@ -5,6 +5,8 @@ import { toast } from 'react-toastify';
 import { useAuth } from '../hooks/useAuth';
 import { AuthLayout } from '../components/AuthLayout';
 import { Button } from '../../../components/ui/Button';
+import { loginSchema, LoginFormValues } from '../validators/auth.validator';
+import { validateSyncWithYup } from '../../../utils/validation.utils';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -16,24 +18,12 @@ export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [validationErrors, setValidationErrors] = useState<{ email?: string; password?: string }>({});
+  const [validationErrors, setValidationErrors] = useState<Partial<Record<keyof LoginFormValues, string>>>({});
 
   const validate = (): boolean => {
-    const errors: { email?: string; password?: string } = {};
-    if (!email.trim()) {
-      errors.email = 'Email address is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errors.email = 'Please enter a valid email address';
-    }
-
-    if (!password) {
-      errors.password = 'Password is required';
-    } else if (password.length < 6) {
-      errors.password = 'Password must be at least 6 characters';
-    }
-
-    setValidationErrors(errors);
-    return Object.keys(errors).length === 0;
+    const result = validateSyncWithYup(loginSchema, { email, password });
+    setValidationErrors(result.errors);
+    return result.isValid;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
