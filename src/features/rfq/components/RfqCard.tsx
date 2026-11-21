@@ -43,10 +43,12 @@ export const RfqCard: React.FC<RfqCardProps> = ({ rfq }) => {
         <div>
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0 flex-1">
-              <span className="text-xs font-mono font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
+              <span className="inline-block text-sm sm:text-base font-mono font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-md border border-blue-200/60">
                 {rfq.partNumber}
               </span>
-              <h3 className="text-sm sm:text-base font-semibold text-slate-800 mt-2 break-words">{rfq.description}</h3>
+              <p className="text-xs sm:text-sm font-medium text-slate-500 mt-1.5 break-words line-clamp-2">
+                {rfq.description}
+              </p>
             </div>
             <Badge variant={getRfqStatusBadgeVariant(status)} className="flex-shrink-0">{status}</Badge>
           </div>

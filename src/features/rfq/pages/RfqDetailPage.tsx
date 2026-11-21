@@ -213,8 +213,8 @@ export const RfqDetailPage: React.FC = () => {
       <div className="bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-6 shadow-sm space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div>
-            <div className="flex items-center flex-wrap gap-2">
-              <span className="text-sm font-mono font-bold px-2.5 py-1 bg-blue-50 text-blue-700 rounded-lg border border-blue-200/60">
+            <div className="flex items-center flex-wrap gap-2.5">
+              <span className="text-lg sm:text-xl font-mono font-bold px-3 py-1 bg-blue-50 text-blue-700 rounded-lg border border-blue-200/70">
                 {selectedRfq.partNumber}
               </span>
               <Badge
@@ -224,7 +224,7 @@ export const RfqDetailPage: React.FC = () => {
                 {rfqStatus}
               </Badge>
             </div>
-            <h1 className="text-lg sm:text-xl font-bold text-slate-900 mt-2 tracking-tight break-words">
+            <h1 className="text-sm sm:text-base font-medium text-slate-600 mt-2 tracking-tight break-words">
               {selectedRfq.description}
             </h1>
           </div>
