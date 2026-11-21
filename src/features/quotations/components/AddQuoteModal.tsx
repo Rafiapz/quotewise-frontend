@@ -1,12 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
-import { X, Plus, Building2, Calendar, Clock, IndianRupee } from 'lucide-react';
-import { toast } from 'react-toastify';
-import { Button } from '../../../components/ui/Button';
-import { useQuotations } from '../hooks/useQuotations';
-import { formatCurrency } from '../../../utils/formatters';
-import { createQuotationSchema, CreateQuotationFormValues } from '../validators/quotation.validator';
-import { validateSyncWithYup } from '../../../utils/validation.utils';
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { X, Plus, Building2, Calendar, Clock, IndianRupee } from "lucide-react";
+import { toast } from "react-toastify";
+import { Button } from "../../../components/ui/Button";
+import { useQuotations } from "../hooks/useQuotations";
+import { formatCurrency } from "../../../utils/formatters";
+import {
+  createQuotationSchema,
+  CreateQuotationFormValues,
+} from "../validators/quotation.validator";
+import { validateSyncWithYup } from "../../../utils/validation.utils";
 
 export interface AddQuoteModalProps {
   isOpen: boolean;
@@ -27,20 +30,22 @@ export const AddQuoteModal: React.FC<AddQuoteModalProps> = ({
 }) => {
   const { createQuotation, isSubmitting } = useQuotations();
 
-  const [name, setName] = useState('');
-  const [unitPrice, setUnitPrice] = useState<number | ''>('');
-  const [leadTimeDays, setLeadTimeDays] = useState<number | ''>('');
-  const [validUntil, setValidUntil] = useState('');
-  const [errors, setErrors] = useState<Partial<Record<keyof CreateQuotationFormValues, string>>>({});
+  const [name, setName] = useState("");
+  const [unitPrice, setUnitPrice] = useState<number | "">("");
+  const [leadTimeDays, setLeadTimeDays] = useState<number | "">("");
+  const [validUntil, setValidUntil] = useState("");
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof CreateQuotationFormValues, string>>
+  >({});
 
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     }
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     };
   }, [isOpen]);
 
@@ -72,10 +77,10 @@ export const AddQuoteModal: React.FC<AddQuoteModalProps> = ({
     if (success) {
       toast.success(`Quote from ${name.trim()} added successfully!`);
       // Reset form
-      setName('');
-      setUnitPrice('');
-      setLeadTimeDays('');
-      setValidUntil('');
+      setName("");
+      setUnitPrice("");
+      setLeadTimeDays("");
+      setValidUntil("");
       setErrors({});
       onClose();
       if (onSuccess) onSuccess();
@@ -83,7 +88,7 @@ export const AddQuoteModal: React.FC<AddQuoteModalProps> = ({
   };
 
   const calculatedTotal =
-    quantity && unitPrice !== '' && !isNaN(Number(unitPrice))
+    quantity && unitPrice !== "" && !isNaN(Number(unitPrice))
       ? Number(unitPrice) * quantity
       : undefined;
 
@@ -103,7 +108,9 @@ export const AddQuoteModal: React.FC<AddQuoteModalProps> = ({
               <span className="text-xs font-mono font-semibold px-2 py-0.5 bg-blue-50 text-blue-600 rounded">
                 {partNumber}
               </span>
-              <h2 className="text-lg font-bold text-slate-900">Add Supplier Quote</h2>
+              <h2 className="text-lg font-bold text-slate-900">
+                Add Supplier Quote
+              </h2>
             </div>
             <p className="text-xs text-slate-500 mt-1">
               Record a supplier price proposal and promised lead time
@@ -135,16 +142,19 @@ export const AddQuoteModal: React.FC<AddQuoteModalProps> = ({
                 value={name}
                 onChange={(e) => {
                   setName(e.target.value);
-                  if (errors.name) setErrors((prev) => ({ ...prev, name: undefined }));
+                  if (errors.name)
+                    setErrors((prev) => ({ ...prev, name: undefined }));
                 }}
                 className={`w-full pl-9 pr-3 py-2 rounded-lg border text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-offset-1 transition-colors ${
                   errors.name
-                    ? 'border-red-400 focus:border-red-500 focus:ring-red-200'
-                    : 'border-slate-300 focus:border-blue-500 focus:ring-blue-200'
+                    ? "border-red-400 focus:border-red-500 focus:ring-red-200"
+                    : "border-slate-300 focus:border-blue-500 focus:ring-blue-200"
                 }`}
               />
             </div>
-            {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name}</p>}
+            {errors.name && (
+              <p className="mt-1 text-xs text-red-600">{errors.name}</p>
+            )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -163,18 +173,22 @@ export const AddQuoteModal: React.FC<AddQuoteModalProps> = ({
                   placeholder="e.g. 1250.00"
                   value={unitPrice}
                   onChange={(e) => {
-                    const val = e.target.value === '' ? '' : parseFloat(e.target.value);
+                    const val =
+                      e.target.value === "" ? "" : parseFloat(e.target.value);
                     setUnitPrice(val);
-                    if (errors.unitPrice) setErrors((prev) => ({ ...prev, unitPrice: undefined }));
+                    if (errors.unitPrice)
+                      setErrors((prev) => ({ ...prev, unitPrice: undefined }));
                   }}
                   className={`w-full pl-9 pr-3 py-2 rounded-lg border text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-offset-1 transition-colors ${
                     errors.unitPrice
-                      ? 'border-red-400 focus:border-red-500 focus:ring-red-200'
-                      : 'border-slate-300 focus:border-blue-500 focus:ring-blue-200'
+                      ? "border-red-400 focus:border-red-500 focus:ring-red-200"
+                      : "border-slate-300 focus:border-blue-500 focus:ring-blue-200"
                   }`}
                 />
               </div>
-              {errors.unitPrice && <p className="mt-1 text-xs text-red-600">{errors.unitPrice}</p>}
+              {errors.unitPrice && (
+                <p className="mt-1 text-xs text-red-600">{errors.unitPrice}</p>
+              )}
             </div>
 
             <div>
@@ -192,24 +206,33 @@ export const AddQuoteModal: React.FC<AddQuoteModalProps> = ({
                   placeholder="e.g. 14"
                   value={leadTimeDays}
                   onChange={(e) => {
-                    const val = e.target.value === '' ? '' : parseInt(e.target.value, 10);
+                    const val =
+                      e.target.value === "" ? "" : parseInt(e.target.value, 10);
                     setLeadTimeDays(val);
-                    if (errors.leadTimeDays) setErrors((prev) => ({ ...prev, leadTimeDays: undefined }));
+                    if (errors.leadTimeDays)
+                      setErrors((prev) => ({
+                        ...prev,
+                        leadTimeDays: undefined,
+                      }));
                   }}
                   className={`w-full pl-9 pr-3 py-2 rounded-lg border text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-offset-1 transition-colors ${
                     errors.leadTimeDays
-                      ? 'border-red-400 focus:border-red-500 focus:ring-red-200'
-                      : 'border-slate-300 focus:border-blue-500 focus:ring-blue-200'
+                      ? "border-red-400 focus:border-red-500 focus:ring-red-200"
+                      : "border-slate-300 focus:border-blue-500 focus:ring-blue-200"
                   }`}
                 />
               </div>
-              {errors.leadTimeDays && <p className="mt-1 text-xs text-red-600">{errors.leadTimeDays}</p>}
+              {errors.leadTimeDays && (
+                <p className="mt-1 text-xs text-red-600">
+                  {errors.leadTimeDays}
+                </p>
+              )}
             </div>
           </div>
 
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1">
-              Quote Valid Until Date <span className="text-red-500">*</span>
+              Valid Until <span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
@@ -217,20 +240,23 @@ export const AddQuoteModal: React.FC<AddQuoteModalProps> = ({
               </div>
               <input
                 type="date"
-                min={new Date().toISOString().split('T')[0]}
+                min={new Date().toISOString().split("T")[0]}
                 value={validUntil}
                 onChange={(e) => {
                   setValidUntil(e.target.value);
-                  if (errors.validUntil) setErrors((prev) => ({ ...prev, validUntil: undefined }));
+                  if (errors.validUntil)
+                    setErrors((prev) => ({ ...prev, validUntil: undefined }));
                 }}
                 className={`w-full pl-9 pr-3 py-2 rounded-lg border text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-offset-1 transition-colors ${
                   errors.validUntil
-                    ? 'border-red-400 focus:border-red-500 focus:ring-red-200'
-                    : 'border-slate-300 focus:border-blue-500 focus:ring-blue-200'
+                    ? "border-red-400 focus:border-red-500 focus:ring-red-200"
+                    : "border-slate-300 focus:border-blue-500 focus:ring-blue-200"
                 }`}
               />
             </div>
-            {errors.validUntil && <p className="mt-1 text-xs text-red-600">{errors.validUntil}</p>}
+            {errors.validUntil && (
+              <p className="mt-1 text-xs text-red-600">{errors.validUntil}</p>
+            )}
           </div>
 
           {/* Real-time Total Estimate Preview */}
@@ -267,6 +293,6 @@ export const AddQuoteModal: React.FC<AddQuoteModalProps> = ({
         </form>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 };
